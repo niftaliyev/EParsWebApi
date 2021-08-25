@@ -1,0 +1,35 @@
+name: CI
+
+on: 
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.302'
+    - name: Dotnet Publish
+      run: dotnet publish -c Release -o deploy
+    - name: Copy single file to remote
+      uses: garygrossgarten/github-action-scp@v0.7.1
+      with:
+        local: /home/runner/work/EParsWebApi/EParsWebApi/deploy/
+        remote: /var/www/helloapp/
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.PASSWORD }}
+    - name: Run SSH command
+      uses: garygrossgarten/github-action-ssh@v0.6.3
+      with:
+        command: sudo systemctl restart dotnetapp.service; cd /var/www/helloapp; ls -l
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.PASSWORD }}
