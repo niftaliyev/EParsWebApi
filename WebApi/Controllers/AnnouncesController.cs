@@ -18,9 +18,11 @@ namespace WebApi.Controllers
             this.unitOfWork = unitOfWork;
         }
         [HttpGet]
-        public  IEnumerable<Announce> Announces()
+        public async Task<IActionResult> Announces()
         {
-            return unitOfWork.Announces.GetAll().OrderByDescending(x => x.id).Take(20);
+            var announces =  unitOfWork.Announces.GetAll().OrderByDescending(x => x.id).Take(20);
+
+            return Ok(announces);
         }
     }
 }

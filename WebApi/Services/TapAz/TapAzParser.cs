@@ -168,7 +168,7 @@ namespace WebApi.Services.TapAz
                         catch (Exception e)
                         {
 
-                            Console.WriteLine("no connection");
+                            Console.WriteLine($"no connection {e.Message}");
                             count = 10;
                         }
                     } // while end
