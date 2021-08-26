@@ -11,23 +11,17 @@ namespace WebApi.Repository
     public class AnnouncesRepository : IRepository<Announce>
     {
         private readonly MySqlConnection connection;
-
-
         public AnnouncesRepository(MySqlConnection connection)
         {
             this.connection = connection;
         }
         public IEnumerable<Announce> GetAll()
         {
-
             var query = "select * from announces";
-
             return connection.Query<Announce>(query);
         }
-
         public void Create(Announce announce)
         {
-
             string uQuery = "INSERT INTO announces (original_id, mobile" +
                 ",name,price,cover,parser_announce" +
                 ",images,logo_images,room_count" +
@@ -47,12 +41,9 @@ namespace WebApi.Repository
                 ",@communal,@text,@view_count,@announcer,@announce_date,@original_date)";
             connection.Execute(uQuery, announce);
         }
-
         public Announce GetById(int id)
         {
             throw new NotImplementedException();
         }
-
-
     }
 }
