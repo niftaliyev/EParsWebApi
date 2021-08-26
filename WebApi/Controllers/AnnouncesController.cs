@@ -12,18 +12,14 @@ namespace WebApi.Controllers
     [ApiController]
     public class AnnouncesController : ControllerBase
     {
-
         private readonly UnitOfWork unitOfWork;
-
         public AnnouncesController(UnitOfWork unitOfWork)
         {
             this.unitOfWork = unitOfWork;
         }
-
         [HttpGet]
-        public IEnumerable<Announce> Announces()
+        public  IEnumerable<Announce> Announces()
         {
-
             return unitOfWork.Announces.GetAll().OrderByDescending(x => x.id).Take(20);
         }
     }

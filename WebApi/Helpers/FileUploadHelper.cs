@@ -9,12 +9,8 @@ namespace WebApi.Helpers
 {
     public class FileUploadHelper
     {
-
-        public async
-        Task
-        DownloadImageAsync(string directoryPath, string fileName, Uri uri, HttpClient httpClient)
+        public async Task DownloadImageAsync(string directoryPath, string fileName, Uri uri, HttpClient httpClient)
         {
-
             await Task.Run(() =>
             {
                 try
@@ -33,14 +29,9 @@ namespace WebApi.Helpers
                 }
                 catch (AggregateException e)
                 {
-
                     Console.WriteLine(e.Message);
-
                 }
-
             });
         }
-
-
     }
 }

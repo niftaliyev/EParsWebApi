@@ -25,10 +25,8 @@ namespace WebApi.Services.TapAz
             this.unitOfWork = unitOfWork;
             proxies = File.ReadAllLines("proxies.txt");
             _httpClient = clientCreater.Create(proxies[0]);
-
             Console.WriteLine(proxies[0]);
         }
-
         public async Task TapAzPars()
         {
             var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");
@@ -46,8 +44,6 @@ namespace WebApi.Services.TapAz
                     int duration = 0;
                     while (true)
                     {
-
-
                         if (count >= 10)
                         {
                             x++;
@@ -179,7 +175,6 @@ namespace WebApi.Services.TapAz
                 }
                 catch (Exception e)
                 {
-
                     Console.WriteLine(e.Message);
                 }
             }
