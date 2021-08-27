@@ -31,7 +31,7 @@ namespace WebApi.Services.TapAz
                             Directory.CreateDirectory(filePath);
 
                         }
-                        await _fileUploadHelper.DownloadImageAsync(filePath, Guid.NewGuid().ToString(), new Uri(link), httpClient);
+                        await _fileUploadHelper.DownloadImageAsync(filePath, $"{i+1}.{Guid.NewGuid().ToString()}", new Uri(link), httpClient);
                     }
 
                 }
