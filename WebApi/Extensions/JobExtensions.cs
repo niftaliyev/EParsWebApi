@@ -13,6 +13,8 @@ namespace WebApi.Extensions
         {
             services.AddTransient<RecordsJob>();
             services.AddHostedService<RecordsScheduleService>();
+            services.AddTransient<EmlakAzJob>();
+            services.AddHostedService<EmlakAzScheduleService>();
             return services;
         }
     }
