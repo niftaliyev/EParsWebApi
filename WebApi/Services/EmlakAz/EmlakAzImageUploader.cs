@@ -41,7 +41,6 @@ namespace WebApi.Services.EmlakAz
                             {
                                 var link = doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value;
 
-
                                 if (!Directory.Exists(filePath))
                                 {
                                     Directory.CreateDirectory(filePath);
