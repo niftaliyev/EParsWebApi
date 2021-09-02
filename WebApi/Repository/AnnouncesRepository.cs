@@ -23,7 +23,7 @@ namespace WebApi.Repository
         public void Create(Announce announce)
         {
             string uQuery = "INSERT INTO announces (original_id, mobile" +
-                ",name,price,cover,parser_announce" +
+                ",price,cover,parser_announce" +
                 ",images,logo_images,room_count" +
                 ",rent_type,property_type,announce_type" +
                 ",cities_regions_id,settlement_id,metro_id " +
@@ -32,7 +32,7 @@ namespace WebApi.Repository
                 ",communal,text,view_count,announcer,announce_date,original_date)"
 
                 + "VALUES(@original_id,@mobile" +
-                ",@name,@price,@cover,@parser_announce" +
+                ",@price,@cover,@parser_announce" +
                 ",@images,@logo_images,@room_count" +
                 ",@rent_type,@property_type,@announce_type " +
                 ",@cities_regions_id,@settlement_id,@metro_id" +

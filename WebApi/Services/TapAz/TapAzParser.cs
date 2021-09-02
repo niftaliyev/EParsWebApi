@@ -17,14 +17,15 @@ namespace WebApi.Services.TapAz
         private HttpClient _httpClient;
         HttpResponseMessage header;
         static string[] proxies; // лучше добавить ентер
-        public TapAzParser(EmlakBaza emlakBaza, TapAzImageUploader uploader, HttpClientCreater clientCreater, UnitOfWork unitOfWork)
+        public TapAzParser(EmlakBaza emlakBaza, TapAzImageUploader uploader, HttpClientCreater clientCreater, UnitOfWork unitOfWork,HttpClient httpClient)
         {
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
             this.clientCreater = clientCreater;
             this.unitOfWork = unitOfWork;
             proxies = File.ReadAllLines("proxies.txt");
-            _httpClient = clientCreater.Create(proxies[0]);
+            // _httpClient = clientCreater.Create(proxies[0]);
+            _httpClient = httpClient;
             Console.WriteLine(proxies[0]);
         }
         public async Task TapAzPars()
@@ -44,15 +45,15 @@ namespace WebApi.Services.TapAz
                     int duration = 0;
                     while (true)
                     {
-                        if (count >= 10)
-                        {
-                            x++;
-                            if (x >= 350)
-                                x = 0;
+                        //if (count >= 10)
+                        //{
+                        //    x++;
+                        //    if (x >= 350)
+                        //        x = 0;
 
-                            _httpClient = clientCreater.Create(proxies[x]);
-                            count = 0;
-                        }
+                        //    _httpClient = clientCreater.Create(proxies[x]);
+                        //    count = 0;
+                        //}
 
                         Console.WriteLine(x);
                         try

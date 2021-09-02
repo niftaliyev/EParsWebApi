@@ -123,13 +123,12 @@ namespace WebApi.Services.EmlakAz
                                                         announce.view_count = doc.DocumentNode.SelectSingleNode(".//span[@class='views-count']//strong").InnerText;
                                                         announce.announce_date = DateTime.Now.ToShortDateString();
                                                         announce.original_date = doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong").InnerText;
-
+                                                        announce.parser_announce = model.site;
                                                         /////////////////////////////// ImageUploader //////////////////////////////
                                                         var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
                                                         _uploader.ImageDownloader(doc, id.ToString(), filePath);
 
                                                         unitOfWork.Announces.Create(announce);
-
                                                     }
                                                 }
                                             }
@@ -145,7 +144,7 @@ namespace WebApi.Services.EmlakAz
                         Console.WriteLine("404");
                         Console.WriteLine(id);
                         counter++;
-                        if (counter == 50)
+                        if (counter >= 50)
                         {
 
                             counter = 0;
