@@ -13,7 +13,7 @@ namespace WebApi.Services.EmlakAz
     {
         private readonly FileUploadHelper _fileUploadHelper;
         private readonly HttpClient httpClient;
-
+        bool turn = true;
         public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient)
         {
             _fileUploadHelper = fileUploadHelper;
@@ -28,23 +28,34 @@ namespace WebApi.Services.EmlakAz
                 Task.Run(async () =>
                 {
                     var count = doc.DocumentNode.SelectNodes(".//img").Count;
-
+                    bool turn = true;
 
 
                     for (int i = 0; i < count; i++)
                     {
-                        if (doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value
-                            .StartsWith("/images/announces"))
+                        if (doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value.StartsWith("/images/announces"))
                         {
                             var split = doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value.Split('/');
                             if (split[5] == id)
                             {
                                 var link = doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value;
 
+                                
+
                                 if (!Directory.Exists(filePath))
                                 {
                                     Directory.CreateDirectory(filePath);
 
+                                }
+                                if (turn)
+                                {
+                                    var link2 = doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value;
+                                    var index = link2.LastIndexOf('-');
+                                    var index2 = link2.LastIndexOf('.');
+                                    var count2 = index2 - index;
+                                    var link0 = link2.Remove(index, count2);
+                                    await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri($"https://emlak.az{link0}"), httpClient);
+                                    turn = false;
                                 }
                                 await _fileUploadHelper.DownloadImageAsync(filePath, Guid.NewGuid().ToString(), new Uri($"https://emlak.az{link}"), httpClient);
                             }
