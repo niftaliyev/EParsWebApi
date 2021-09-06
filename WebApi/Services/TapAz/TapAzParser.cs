@@ -80,8 +80,8 @@ namespace WebApi.Services.TapAz
                                         if (doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']") != null)
                                             announce.price = doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", "");
 
-                                        if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
-                                            announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
+                                        //if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
+                                            //announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
                                         if (doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p") != null)
                                             announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p").InnerText;
 
@@ -144,8 +144,7 @@ namespace WebApi.Services.TapAz
                                         var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
                                         _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
 
-                                        //context.announces.Add(announce);  // не пуш с комментариями - мусор
-                                        //context.SaveChanges();
+      
                                         unitOfWork.Announces.Create(announce);
                                     }
                                 }

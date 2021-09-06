@@ -37,6 +37,8 @@ namespace WebApi
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseStaticFiles();// For the wwwroot folder
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WebApi.Helpers;
+using WebApi.Models;
+using WebApi.Repository;
 
 namespace WebApi.Services.EmlakAz
 {
@@ -13,15 +15,17 @@ namespace WebApi.Services.EmlakAz
     {
         private readonly FileUploadHelper _fileUploadHelper;
         private readonly HttpClient httpClient;
+        private readonly UnitOfWork unitOfWork;
         bool turn = true;
-        public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient)
+        public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient, UnitOfWork unitOfWork)
         {
             _fileUploadHelper = fileUploadHelper;
             this.httpClient = httpClient;
+            this.unitOfWork = unitOfWork;
         }
-        public void ImageDownloader(HtmlDocument doc, string id, string filePath)
+        public void ImageDownloader(HtmlDocument doc, string id, string filePath, Announce announce)
         {
-
+            List<string> randoms = new List<string>();
 
             try
             {
@@ -57,7 +61,13 @@ namespace WebApi.Services.EmlakAz
                                     await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri($"https://emlak.az{link0}"), httpClient);
                                     turn = false;
                                 }
-                                await _fileUploadHelper.DownloadImageAsync(filePath, Guid.NewGuid().ToString(), new Uri($"https://emlak.az{link}"), httpClient);
+                                var filename = Guid.NewGuid().ToString();
+                                var uri = new Uri($"https://emlak.az{link}");
+
+                                var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                                var fileExtension = Path.GetExtension(uriWithoutQuery);
+
+                                await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
                             }
 
                         }

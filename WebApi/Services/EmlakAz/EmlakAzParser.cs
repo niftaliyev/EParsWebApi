@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WebApi.Models;
@@ -84,7 +85,6 @@ namespace WebApi.Services.EmlakAz
 
                                             if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText != null)
                                             {
-                                                announce.name = doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText;
 
                                                 if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.StartsWith("İcarəyə verilir"))
                                                     announce.rent_type = 1;
@@ -126,8 +126,19 @@ namespace WebApi.Services.EmlakAz
                                                         announce.parser_announce = model.site;
                                                         /////////////////////////////// ImageUploader //////////////////////////////
                                                         var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
-                                                        _uploader.ImageDownloader(doc, id.ToString(), filePath);
+                                                        _uploader.ImageDownloader(doc, id.ToString(), filePath,announce);
+                                                        List<string> images = new List<string>();
+                                                        string[] arr = new string[4];
+                                                        arr[0] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
+                                                        arr[1] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
+                                                        arr[2] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
+                                                        arr[3] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
+                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
+                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
+                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
+                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
 
+                                                        announce.logo_images = JsonSerializer.Serialize(arr);
                                                         unitOfWork.Announces.Create(announce);
                                                     }
                                                 }
