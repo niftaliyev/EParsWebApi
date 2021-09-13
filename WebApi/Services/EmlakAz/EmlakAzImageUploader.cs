@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Helpers;
 using WebApi.Models;
@@ -23,16 +24,17 @@ namespace WebApi.Services.EmlakAz
             this.httpClient = httpClient;
             this.unitOfWork = unitOfWork;
         }
-        public void ImageDownloader(HtmlDocument doc, string id, string filePath, Announce announce)
+        public async Task<List<string>> ImageDownloaderAsync(HtmlDocument doc, string id, string filePath)
         {
             List<string> randoms = new List<string>();
-
+            List<string> list = new List<string>();
             try
             {
-                Task.Run(async () =>
+                list =await Task.Run(async () =>
                 {
                     var count = doc.DocumentNode.SelectNodes(".//img").Count;
                     bool turn = true;
+                    List<string> images = new List<string>();
 
 
                     for (int i = 0; i < count; i++)
@@ -68,17 +70,23 @@ namespace WebApi.Services.EmlakAz
                                 var fileExtension = Path.GetExtension(uriWithoutQuery);
 
                                 await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
+                                var indexStartUpload = filePath.IndexOf("UploadFile");
+                                var fileEndPath = $"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}";
+                                images.Add(fileEndPath);
+                                //Console.WriteLine($"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}");
+                                
                             }
 
                         }
                     }
-
+                    return images;
                 });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+            return list;
 
         }
     }
