@@ -18,13 +18,13 @@ namespace WebApi.Services.EmlakAz
         private readonly HttpClient httpClient;
         private readonly UnitOfWork unitOfWork;
         bool turn = true;
-        public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient, UnitOfWork unitOfWork)
+        public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient, UnitOfWork unitOfWork )
         {
             _fileUploadHelper = fileUploadHelper;
             this.httpClient = httpClient;
             this.unitOfWork = unitOfWork;
         }
-        public async Task<List<string>> ImageDownloaderAsync(HtmlDocument doc, string id, string filePath)
+        public async Task<List<string>> ImageDownloaderAsync(HtmlDocument doc, string id, string filePath, int newIdAnnounce)
         {
             List<string> randoms = new List<string>();
             List<string> list = new List<string>();
@@ -79,6 +79,7 @@ namespace WebApi.Services.EmlakAz
 
                         }
                     }
+                    unitOfWork.Announces.Update(newIdAnnounce);
                     return images;
                 });
             }

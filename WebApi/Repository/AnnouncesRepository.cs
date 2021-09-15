@@ -20,7 +20,7 @@ namespace WebApi.Repository
             var query = "select * from announces";
             return connection.Query<Announce>(query);
         }
-        public void Create(Announce announce)
+        public int Create(Announce announce)
         {
             string uQuery = "INSERT INTO announces (original_id, mobile" +
                 ",price,cover,parser_site" +
@@ -38,14 +38,27 @@ namespace WebApi.Repository
                 ",@cities_regions_id,@settlement_id,@metro_id" +
                 ",@apartment_id,@mark,@address,@google_map" +
                 ",@floor_count,@current_floor,@space,@document" +
-                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date)";
-            connection.Execute(uQuery, announce);
+                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date); ";
+                connection.Execute(uQuery, announce);
+
+                var query = "SELECT `id` FROM `announces` order by id desc limit 0,1";
+
+                var id = connection.QueryFirst<int>(query);
+
+                return id;
+
         }
         public Announce GetById(int id)
         {
             throw new NotImplementedException();
         }
 
+        public void Update(int LastId)
+        {
+            var test = LastId;
+            string uQuery = $"UPDATE announces SET images = 'helloworld' WHERE id = {LastId}";
+            connection.Execute(uQuery, test);
 
+        }
     }
 }

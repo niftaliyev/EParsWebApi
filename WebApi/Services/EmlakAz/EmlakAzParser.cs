@@ -116,7 +116,7 @@ namespace WebApi.Services.EmlakAz
                                                         announce.mobile = mobileregex;
                                                         announce.original_id = Int32.Parse(result);
                                                         announce.cover = $@"\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}\Thumb.jpg";
-                                                        announce.images = $@"\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}";
+                                                        //announce.images = $@"\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}";
                                                         announce.room_count = regex.Match(doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[2].InnerText).ToString();
                                                         announce.cities_regions_id = 2;
                                                         announce.view_count = doc.DocumentNode.SelectSingleNode(".//span[@class='views-count']//strong").InnerText;
@@ -124,10 +124,10 @@ namespace WebApi.Services.EmlakAz
                                                         announce.original_date = doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong").InnerText;
                                                         announce.parser_site = model.site;
                                                         /////////////////////////// ImageUploader //////////////////////////////
-                                                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
-                                                        var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
+                                                        //var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
+                                                        //var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
 
-                                                        announce.logo_images = JsonSerializer.Serialize(await images);
+                                                        //announce.logo_images = JsonSerializer.Serialize(await images);
 
 
 
@@ -137,7 +137,9 @@ namespace WebApi.Services.EmlakAz
 
 
 
-                                                        unitOfWork.Announces.Create(announce);
+                                                       var newIdAnnounce = unitOfWork.Announces.Create(announce);
+                                                       var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
+                                                       var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath , newIdAnnounce);
                                                     }
                                                 }
                                             }
