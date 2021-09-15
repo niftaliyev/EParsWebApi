@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WebApi.Services;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.TapAz;
+using WebApi.Services.YeniEmlakAz;
 
 namespace WebApi.Extensions
 {
@@ -18,6 +19,7 @@ namespace WebApi.Extensions
             services.AddTransient<TapAzImageUploader>();
             services.AddTransient<EmlakAzParser>();
             services.AddTransient<EmlakAzImageUploader>();
+            services.AddTransient<YeniEmlakAzParser>();
             return services;
         }
     }

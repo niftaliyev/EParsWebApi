@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -137,14 +138,14 @@ namespace WebApi.Services.TapAz
                                         announce.cities_regions_id = 5;
                                         announce.view_count = doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", "");
                                         announce.announce_date = DateTime.Now.ToShortDateString();
-                                        announce.parser_announce = model.site;
+                                        announce.parser_site = model.site;
 
                                         Console.WriteLine(proxies[x]);
 
                                         var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
-                                        _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                        var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                        announce.logo_images = JsonSerializer.Serialize(await images);
 
-      
                                         unitOfWork.Announces.Create(announce);
                                     }
                                 }
@@ -156,9 +157,9 @@ namespace WebApi.Services.TapAz
                             {
                                 duration++;
                             }
-                            if (duration >= 10)
+                            if (duration >= 7)
                             {
-                                model.last_id = (id - 10);
+                                model.last_id = (id - 7);
                                 model.isActive = false;
                                 unitOfWork.ParserAnnounceRepository.Update(model);
                                 duration = 0;
@@ -177,6 +178,7 @@ namespace WebApi.Services.TapAz
                 {
                     Console.WriteLine(e.Message);
                 }
+
             }
         }
     }

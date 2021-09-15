@@ -12,7 +12,7 @@ namespace WebApi.Models
         public string mobile { get; set; }
         public string price { get; set; }
         public string cover { get; set; }
-        public string parser_announce { get; set; }
+        public string parser_site { get; set; }
         public string images { get; set; }
         public string logo_images { get; set; }
         public string room_count { get; set; }

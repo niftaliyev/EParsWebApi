@@ -1,14 +1,13 @@
 ﻿using HtmlAgilityPack;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
+using IronOcr;
 
 namespace WebApi.Services.EmlakAz
 {
@@ -78,12 +77,12 @@ namespace WebApi.Services.EmlakAz
                                             }
                                             var numberList = mobileregex.Split(',');
 
-                                            ////EMLAK - BAZASI
+                                            //EMLAK - BAZASI
                                             //_emlakBaza.CheckAsync(numberList);
 
                                             Console.WriteLine(mobileregex);
 
-                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText != null)
+                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']") != null)
                                             {
 
                                                 if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.StartsWith("İcarəyə verilir"))
@@ -107,38 +106,37 @@ namespace WebApi.Services.EmlakAz
                                                 if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0].InnerText.EndsWith("Həyət evi"))
                                                     announce.property_type = 4;
 
-                                                if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText != null)
+                                                if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']") != null)
                                                 {
-                                                    announce.price = doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText;
+                                                    announce.price = doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText.Replace(" ", string.Empty);
                                                     if (doc.DocumentNode.SelectSingleNode(".//div[@class='desc']//p")
                                                         .InnerText != null)
                                                     {
-                                                        announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='desc']//p").InnerText;
+                                                        announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='desc']//p").InnerText.Replace(" \n\n" ,string.Empty);
                                                         announce.mobile = mobileregex;
                                                         announce.original_id = Int32.Parse(result);
-                                                        announce.cover = "1";
+                                                        announce.cover = $@"\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}\Thumb.jpg";
                                                         announce.images = $@"\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}";
                                                         announce.room_count = regex.Match(doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[2].InnerText).ToString();
                                                         announce.cities_regions_id = 2;
                                                         announce.view_count = doc.DocumentNode.SelectSingleNode(".//span[@class='views-count']//strong").InnerText;
                                                         announce.announce_date = DateTime.Now.ToShortDateString();
                                                         announce.original_date = doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong").InnerText;
-                                                        announce.parser_announce = model.site;
-                                                        /////////////////////////////// ImageUploader //////////////////////////////
-                                                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
-                                                        _uploader.ImageDownloader(doc, id.ToString(), filePath,announce);
-                                                        List<string> images = new List<string>();
-                                                        string[] arr = new string[4];
-                                                        arr[0] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
-                                                        arr[1] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
-                                                        arr[2] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
-                                                        arr[3] = "/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg";
-                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
-                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
-                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
-                                                        images.Add("/UploadFile/EmlakAz/2021/9/741404/Thumb.jpg");
+                                                        announce.parser_site = model.site;
+                                                        ///////////////////////////// ImageUploader //////////////////////////////
+                                                        //var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
+                                                        //var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
 
-                                                        announce.logo_images = JsonSerializer.Serialize(arr);
+                                                        //announce.logo_images = JsonSerializer.Serialize(await images);
+
+
+
+
+                                                        //var Result = new IronTesseract().Read(@"C:\Users\Kamran\Desktop\download\test.png").Text;
+                                                        //Console.WriteLine($"{Result}   yeniemlakaz");
+           
+
+
                                                         unitOfWork.Announces.Create(announce);
                                                     }
                                                 }

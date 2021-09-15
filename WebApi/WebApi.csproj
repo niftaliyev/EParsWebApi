@@ -5,15 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.0.90" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.36" />
-    <PackageReference Include="MySql.Data" Version="8.0.26" />
-    <PackageReference Include="Quartz" Version="3.3.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+    <Content Include="test.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\UploadFile\" />
+    <PackageReference Include="Dapper" Version="2.0.90" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.36" />
+    <PackageReference Include="IronOcr" Version="2021.9.0" />
+    <PackageReference Include="MySql.Data" Version="8.0.26" />
+    <PackageReference Include="Quartz" Version="3.3.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 
 </Project>
