@@ -123,18 +123,18 @@ namespace WebApi.Services.EmlakAz
                                                         announce.announce_date = DateTime.Now.ToShortDateString();
                                                         announce.original_date = doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong").InnerText;
                                                         announce.parser_site = model.site;
-                                                        ///////////////////////////// ImageUploader //////////////////////////////
-                                                        //var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
-                                                        //var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
+                                                        /////////////////////////// ImageUploader //////////////////////////////
+                                                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
+                                                        var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
 
-                                                        //announce.logo_images = JsonSerializer.Serialize(await images);
+                                                        announce.logo_images = JsonSerializer.Serialize(await images);
 
 
 
 
                                                         //var Result = new IronTesseract().Read(@"C:\Users\Kamran\Desktop\download\test.png").Text;
                                                         //Console.WriteLine($"{Result}   yeniemlakaz");
-           
+
 
 
                                                         unitOfWork.Announces.Create(announce);
