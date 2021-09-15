@@ -77,12 +77,12 @@ namespace WebApi.Services.EmlakAz
                                             }
                                             var numberList = mobileregex.Split(',');
 
-                                            ////EMLAK - BAZASI
+                                            //EMLAK - BAZASI
                                             //_emlakBaza.CheckAsync(numberList);
 
                                             Console.WriteLine(mobileregex);
 
-                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText != null)
+                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']") != null)
                                             {
 
                                                 if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.StartsWith("İcarəyə verilir"))
@@ -106,7 +106,7 @@ namespace WebApi.Services.EmlakAz
                                                 if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0].InnerText.EndsWith("Həyət evi"))
                                                     announce.property_type = 4;
 
-                                                if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText != null)
+                                                if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']") != null)
                                                 {
                                                     announce.price = doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText.Replace(" ", string.Empty);
                                                     if (doc.DocumentNode.SelectSingleNode(".//div[@class='desc']//p")
@@ -124,10 +124,10 @@ namespace WebApi.Services.EmlakAz
                                                         announce.original_date = doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong").InnerText;
                                                         announce.parser_site = model.site;
                                                         ///////////////////////////// ImageUploader //////////////////////////////
-                                                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
-                                                        var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
+                                                        //var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
+                                                        //var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
 
-                                                        announce.logo_images = JsonSerializer.Serialize(await images);
+                                                        //announce.logo_images = JsonSerializer.Serialize(await images);
 
 
 

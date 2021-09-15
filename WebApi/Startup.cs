@@ -4,9 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System.Net;
+using System.Net.Http;
 using WebApi.Extensions;
 using WebApi.Helpers;
 using WebApi.Jobs;
+using WebApi.Proxy;
 using WebApi.Repository;
 using WebApi.Services;
 using WebApi.Services.TapAz;
@@ -34,6 +37,16 @@ namespace WebApi
             services.AddTransient<HttpClientCreater>();
             services.AddParsers();
             services.AddJobs();
+
+            services.AddHttpClient<ProxysHttpClient>().
+                ConfigurePrimaryHttpMessageHandler((c => new HttpClientHandler()
+                {
+                    Proxy = new WebProxy(Configuration["ProxyOptions:Address"])
+                    {
+                        Credentials = new NetworkCredential { UserName = Configuration["ProxyOptions:Username"], Password = Configuration["ProxyOptions:Password"] }
+                    }
+                }));
+
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
