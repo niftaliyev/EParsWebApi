@@ -31,16 +31,17 @@ namespace WebApi.Services.YeniEmlakAz
             var id = model.last_id;
             int counter = 0;
 
-
-            while (true)
+            if (!model.isActive)
             {
-                Announce announce = new Announce();
-                try
+                while (true)
                 {
+                    Announce announce = new Announce();
+                    try
+                    {
 
-                    header = await httpClient.GetAsync($"{model.site}/elan/{++id}");
-                    string url = header.RequestMessage.RequestUri.AbsoluteUri;
-                    Console.WriteLine(id);
+                        header = await httpClient.GetAsync($"{model.site}/elan/{++id}");
+                        string url = header.RequestMessage.RequestUri.AbsoluteUri;
+                        Console.WriteLine(id);
                         var response = await httpClient.GetAsync(url);
                         if (header.IsSuccessStatusCode)
                         {
@@ -52,12 +53,14 @@ namespace WebApi.Services.YeniEmlakAz
                                 Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='text']") == null ? "not null" : doc.DocumentNode.SelectSingleNode(".//div[@class='text']").InnerText);
                             }
                         }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("No Connection");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("No Connection");
+                    }
                 }
             }
+            
         }
     }
 }

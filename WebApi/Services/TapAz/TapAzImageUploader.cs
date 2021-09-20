@@ -32,6 +32,12 @@ namespace WebApi.Services.TapAz
                     {
                         var link = doc.DocumentNode.SelectNodes(".//div[@class='thumbnails']//a")[i].Attributes["href"].Value;
 
+                        if (i == 0)
+                        {
+                            await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri($"{link.Replace("full", "thumbnail")}"), httpClient);
+
+                        }
+
                         if (!Directory.Exists(filePath))
                         {
                             Directory.CreateDirectory(filePath);
@@ -49,6 +55,7 @@ namespace WebApi.Services.TapAz
                         var indexStartUpload = filePath.IndexOf("UploadFile");
                         var fileEndPath = $"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}";
                         images.Add(fileEndPath);
+                       
                     }
                 }
                 catch (Exception e)

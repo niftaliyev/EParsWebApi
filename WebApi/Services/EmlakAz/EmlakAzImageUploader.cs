@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using WebApi.Helpers;
 using WebApi.Models;
 using WebApi.Repository;
+using WebApi.ViewModels;
 
 namespace WebApi.Services.EmlakAz
 {
@@ -17,20 +18,19 @@ namespace WebApi.Services.EmlakAz
         private readonly FileUploadHelper _fileUploadHelper;
         private readonly HttpClient httpClient;
         private readonly UnitOfWork unitOfWork;
-        bool turn = true;
         public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient, UnitOfWork unitOfWork )
         {
             _fileUploadHelper = fileUploadHelper;
             this.httpClient = httpClient;
             this.unitOfWork = unitOfWork;
         }
-        public async Task<List<string>> ImageDownloaderAsync(HtmlDocument doc, string id, string filePath, int newIdAnnounce)
+        public async Task<List<string>> ImageDownloaderAsync(HtmlDocument doc, string id, string filePath)
         {
-            List<string> randoms = new List<string>();
             List<string> list = new List<string>();
+
             try
             {
-                list =await Task.Run(async () =>
+                list = await Task.Run(async () =>
                 {
                     var count = doc.DocumentNode.SelectNodes(".//img").Count;
                     bool turn = true;
@@ -79,8 +79,8 @@ namespace WebApi.Services.EmlakAz
 
                         }
                     }
-                    unitOfWork.Announces.Update(newIdAnnounce);
                     return images;
+                    //await unitOfWork.Announces.UpdateAsync(new AnnounceImageUpdateViewModel { LastId = newIdAnnounce , Images = JsonSerializer.Serialize(images) });
                 });
             }
             catch (Exception e)
@@ -88,7 +88,6 @@ namespace WebApi.Services.EmlakAz
                 Console.WriteLine(e);
             }
             return list;
-
         }
     }
 }

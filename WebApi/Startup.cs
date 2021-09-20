@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +46,7 @@ namespace WebApi
                         Credentials = new NetworkCredential { UserName = Configuration["ProxyOptions:Username"], Password = Configuration["ProxyOptions:Password"] }
                     }
                 }));
+            services.AddCors(); // добавляем сервисы CORS
 
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -56,6 +57,7 @@ namespace WebApi
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseCors(builder => builder.AllowAnyOrigin());
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
