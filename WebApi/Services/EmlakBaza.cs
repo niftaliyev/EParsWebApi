@@ -25,7 +25,7 @@ namespace WebApi.Services
         {
             try
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     for (int i = 0; i < numbers.Length; i++)
                     {
@@ -35,11 +35,11 @@ namespace WebApi.Services
 
                         var content = new FormUrlEncodedContent(values);
 
-                        var response = httpClient.PostAsync("https://emlak-bazasi.com/search/agency/", content).Result;
+                        var response = await httpClient.PostAsync("https://emlak-bazasi.com/search/agency/", content);
 
                         if (response != null)
                         {
-                            var responseString = response.Content.ReadAsStringAsync().Result;
+                            var responseString = await response.Content.ReadAsStringAsync();
 
                             if (!string.IsNullOrEmpty(responseString))
                             {
@@ -47,59 +47,38 @@ namespace WebApi.Services
                                 doc.LoadHtml(responseString);
 
                                 var counts = doc.DocumentNode.SelectNodes(".//div[@class='count']");
-                                if (counts != null && counts[1].InnerText != null)
-
+                                if (counts != null && counts[1] != null)
                                 {
                                     string result = counts[1].InnerText.Trim();
                                     Console.WriteLine(result);
-
+                                    
                                     if (result != null)
                                     {
-
-                                        //context.mediators.Add(new Mediator { Phone = result });
-                                        //context.SaveChanges();
-
                                         if (result.Trim() == "Vasitəçi deyil")
                                         {
-                                            //context.Owners.Add(new Owner() { Phone = numbers[i] });
-                                            //context.SaveChanges();
                                             Console.WriteLine(result.Trim());
+                                            unitOfWork.OwnerRepository.Create(new Owner { Phone = numbers[i] });
                                         }
                                         else if (result.Trim() == "Vasitəçidir")
                                         {
                                             Console.WriteLine(result.Trim());
-                                            //context.Rieltors.Add(new Rieltor() { Phone = numbers[i] });
-                                            //context.SaveChanges();
-
+                                            unitOfWork.RieltorRepository.Create(new Rieltor { Phone = numbers[i] });
                                         }
                                         else
                                         {
                                             Console.WriteLine(result.Trim());
                                         }
                                     }
-
                                 }
-
                             }
-
                         }
                     }
-
-
-
-
                 });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Data.ToString());
             }
-
-
-
-
         }
-
     }
-
 }

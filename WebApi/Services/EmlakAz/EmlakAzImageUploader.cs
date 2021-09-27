@@ -73,14 +73,11 @@ namespace WebApi.Services.EmlakAz
                                 var indexStartUpload = filePath.IndexOf("UploadFile");
                                 var fileEndPath = $"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}";
                                 images.Add(fileEndPath);
-                                //Console.WriteLine($"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}");
                                 
                             }
-
                         }
                     }
                     return images;
-                    //await unitOfWork.Announces.UpdateAsync(new AnnounceImageUpdateViewModel { LastId = newIdAnnounce , Images = JsonSerializer.Serialize(images) });
                 });
             }
             catch (Exception e)

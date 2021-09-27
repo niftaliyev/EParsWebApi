@@ -37,7 +37,7 @@ namespace WebApi
             services.AddTransient<HttpClientCreater>();
             services.AddParsers();
             services.AddJobs();
-
+            
             services.AddHttpClient<ProxysHttpClient>().
                 ConfigurePrimaryHttpMessageHandler((c => new HttpClientHandler()
                 {
@@ -64,6 +64,7 @@ namespace WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
                 //c.RoutePrefix = string.Empty;
             });
+            
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseEndpoints(endpoints =>

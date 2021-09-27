@@ -82,7 +82,7 @@ namespace WebApi.Services.TapAz
                                         if (doc.DocumentNode.SelectSingleNode(".//a[@class='phone']") != null)
                                         {
                                             if (doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']") != null)
-                                                announce.price = doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", "");
+                                                announce.price =Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", ""));
 
                                             //if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
                                             //announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
@@ -99,33 +99,36 @@ namespace WebApi.Services.TapAz
                                                 {
                                                     mobileregex = mobileregex.Replace(c, string.Empty);
                                                 }
-                                                if (mobileregex.Contains(','))
-                                                {
-                                                    var numberList = mobileregex.Split(',');
+                                                var numberList = mobileregex.Split(',');
 
-                                                }
+                                                if (mobileregex != null)
+                                                    announce.mobile = mobileregex;
+
 
                                                 //EMLAK - BAZASI
-                                                // _ = _emlakBaza.CheckAsync(_httpClient, numberList);  // не пуш с комментариями - мусор
+                                                _emlakBaza.CheckAsync(numberList); 
                                             }
-                                            announce.mobile = mobileregex;
                                             Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText);
                                             Console.WriteLine(mobileregex);
 
-                                            if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Bugün"))
-                                                announce.original_date = DateTime.Now.ToShortDateString();
+                                            if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2] != null)
+                                            {
+                                                if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Bugün"))
+                                                    announce.original_date = DateTime.Now.ToShortDateString();
 
-                                            if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Dünən"))
-                                                announce.original_date = DateTime.Now.AddDays(-1).ToShortDateString();
-                                            else
-                                                if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "") != null)
-                                                announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "");
+                                                if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Dünən"))
+                                                    announce.original_date = DateTime.Now.AddDays(-1).ToShortDateString();
+                                                else
+                                                    if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "") != null)
+                                                    announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "");
+                                            }
+                                           
 
                                             var countPropertyName = doc.DocumentNode.SelectNodes(".//td[@class='property-name']").Count;
                                             for (int i = 0; i < countPropertyName; i++)
                                             {
                                                 if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Otaq sayı")
-                                                    announce.room_count = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
+                                                    announce.room_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
                                                 if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri")
                                                     announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
 
@@ -137,10 +140,10 @@ namespace WebApi.Services.TapAz
                                             announce.original_id = id;
                                             announce.cover = $@"\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}\Thumb.jpg";
                                             announce.images = $@"\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}";
-                                            announce.cities_regions_id = 5;
-                                            announce.view_count = doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", "");
-                                            announce.announce_date = DateTime.Now.ToShortDateString();
+                                            announce.region_id = 5;
+                                            announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                             announce.parser_site = model.site;
+                                            announce.announce_date = DateTime.Now;
 
                                             Console.WriteLine(proxies[x]);
 
@@ -169,9 +172,9 @@ namespace WebApi.Services.TapAz
                                     duration++;
                                 }
                             }
-                            if (duration >= 20)
+                            if (duration >= 115)
                             {
-                                model.last_id = (id - 20);
+                                model.last_id = (id - 115);
                                 model.isActive = false;
                                 unitOfWork.ParserAnnounceRepository.Update(model);
                                 duration = 0;

@@ -28,7 +28,7 @@ namespace WebApi.Repository
                 ",price,cover,parser_site" +
                 ",images,logo_images,room_count" +
                 ",rent_type,property_type,announce_type" +
-                ",cities_regions_id,settlement_id,metro_id " +
+                ",region_id,settlement_id,metro_id " +
                 ",apartment_id,mark,address,google_map," +
                 "floor_count,current_floor,space,document" +
                 ",communal,text,view_count,announcer,announce_date,original_date)"
@@ -37,17 +37,11 @@ namespace WebApi.Repository
                 ",@price,@cover,@parser_site" +
                 ",@images,@logo_images,@room_count" +
                 ",@rent_type,@property_type,@announce_type " +
-                ",@cities_regions_id,@settlement_id,@metro_id" +
+                ",@region_id,@settlement_id,@metro_id" +
                 ",@apartment_id,@mark,@address,@google_map" +
                 ",@floor_count,@current_floor,@space,@document" +
                 ",@communal,@text,@view_count,@announcer,@announce_date,@original_date); ";
                 connection.Execute(uQuery, announce);
-
-                //var query = "SELECT `id` FROM `announces` order by id desc limit 0,1";
-
-                //var id = connection.QueryFirst<int>(query);
-
-                //return id;
 
         }
         public Announce GetById(int id)
