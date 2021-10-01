@@ -70,10 +70,14 @@ namespace WebApi.Services.EmlakAz
                                 var fileExtension = Path.GetExtension(uriWithoutQuery);
 
                                 await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
-                                var indexStartUpload = filePath.IndexOf("UploadFile");
-                                var fileEndPath = $"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}";
+                                //var indexStartUpload = filePath.IndexOf("UploadFile");
+                                //var fileEndPath = $"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}";
+                                //images.Add(fileEndPath);
+                                var fileEndPath = $"{filePath}{filename}{fileExtension}";
+
                                 images.Add(fileEndPath);
-                                
+
+
                             }
                         }
                     }

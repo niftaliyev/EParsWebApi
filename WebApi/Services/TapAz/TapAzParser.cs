@@ -136,6 +136,9 @@ namespace WebApi.Services.TapAz
                                                     announce.announce_type = 1;
                                                 if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == "İcarəyə verilir")
                                                     announce.announce_type = 2;
+
+                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.StartsWith("Sahə, m²"))
+                                                    announce.space = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].LastChild.InnerText;
                                             }
                                             announce.original_id = id;
                                             announce.cover = $@"\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}\Thumb.jpg";

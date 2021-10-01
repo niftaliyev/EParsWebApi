@@ -37,6 +37,7 @@ namespace WebApi.Models
         public DateTime announce_date { get; set; }
         public string original_date { get; set; }
         public bool number_checked { get; set; }
+        public bool repair { get; set; }
 
     }
 }

@@ -12,6 +12,8 @@ using WebApi.Jobs;
 using WebApi.Proxy;
 using WebApi.Repository;
 using WebApi.Services;
+using WebApi.Services.EmlakAz;
+using WebApi.Services.EmlakAz.Interfaces;
 using WebApi.Services.TapAz;
 
 namespace WebApi
@@ -25,8 +27,8 @@ namespace WebApi
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=weatherapi;Pwd=1n@pFmGImnXiQdTWw;Database=weatherapi;SslMode = none;"));
             services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlaksoon;SslMode = none;"));
+            //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=emlakcrawler;Pwd=elgun123;Database=emlakcrawler;SslMode = none;"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -35,6 +37,7 @@ namespace WebApi
             services.AddHttpClient();
             services.AddTransient<FileUploadHelper>();
             services.AddTransient<HttpClientCreater>();
+            services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddParsers();
             services.AddJobs();
             

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
 using IronOcr;
+using WebApi.Services.EmlakAz.Interfaces;
 
 namespace WebApi.Services.EmlakAz
 {
@@ -17,14 +18,16 @@ namespace WebApi.Services.EmlakAz
         private readonly EmlakBaza _emlakBaza;
         private readonly EmlakAzImageUploader _uploader;
         private readonly UnitOfWork unitOfWork;
+        private readonly ITypeOfProperty typeOfProperty;
         HttpResponseMessage header;
 
-        public EmlakAzParser(HttpClient httpClient, EmlakBaza emlakBaza, EmlakAzImageUploader uploader, UnitOfWork unitOfWork)
+        public EmlakAzParser(HttpClient httpClient, EmlakBaza emlakBaza, EmlakAzImageUploader uploader, UnitOfWork unitOfWork,ITypeOfProperty typeOfProperty)
         {
             this.httpClient = httpClient;
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
             this.unitOfWork = unitOfWork;
+            this.typeOfProperty = typeOfProperty;
         }
 
         public async Task EmlakAzPars()
@@ -91,19 +94,41 @@ namespace WebApi.Services.EmlakAz
                                         }
 
                                         if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']") != null)
+                                            announce.rent_type = typeOfProperty.GetTitleOfProperty(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
+
+                                        foreach (var item in doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd"))
                                         {
-                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.StartsWith("İcarəyə verilir"))
-                                                announce.rent_type = 1;
-                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.StartsWith("Satılır"))
-                                                announce.rent_type = 2;
-                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Trim().StartsWith("Satılır"))
-                                                announce.announce_type = 1;
-                                            if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Trim().StartsWith("İcarəyə verilir"))
-                                                announce.announce_type = 2;
-
-                                            Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
-
+                                            if (item != null)
+                                            {
+                                                if (item.InnerText.StartsWith("Əmlakın növü"))
+                                                    announce.property_type = typeOfProperty.GetTypeOfProperty(item.InnerText);
+                                                if (item.InnerText.StartsWith("Sahə"))
+                                                    announce.space = regex.Match(item.InnerText).ToString();
+                                                if (item.InnerText.StartsWith("Otaqların sayı"))
+                                                    announce.floor_count = Int32.Parse(item.LastChild.InnerText);
+                                                if (item.InnerText.StartsWith("Otaqların sayı"))
+                                                    announce.room_count = Int32.Parse(item.LastChild.InnerText);
+                                                if (item.InnerText.StartsWith("Yerləşdiyi mərtəbə"))
+                                                    announce.current_floor = Int32.Parse(item.LastChild.InnerText);
+                                                if (item.InnerText.StartsWith("Mərtəbə sayı"))
+                                                    announce.floor_count = Int32.Parse(item.LastChild.InnerText);
+                                                if (item.InnerText.StartsWith("Təmiri"))
+                                                {
+                                                    if (item.LastChild.InnerText == "Təmirsiz")
+                                                        announce.repair = false;
+                                                    else
+                                                        announce.repair = true;
+                                                }
+                                                   
+                                            }
                                         }
+
+                                        //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0] != null)
+
+                                        //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[1] != null)
+                                        //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[3] != null)
+                                        //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[2] != null)
+
 
 
 
@@ -115,17 +140,6 @@ namespace WebApi.Services.EmlakAz
                                                 announce.announcer = 2;
                                         }
 
-                                        if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0] != null)
-                                        {
-                                            if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0].InnerText.EndsWith("Yeni tikili"))
-                                                announce.property_type = 1;
-                                            if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0].InnerText.EndsWith("Köhnə tikili"))
-                                                announce.property_type = 2;
-                                            if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0].InnerText.EndsWith("Torpaq"))
-                                                announce.property_type = 3;
-                                            if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0].InnerText.EndsWith("Həyət evi"))
-                                                announce.property_type = 4;
-                                        }
 
 
                                         if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']") != null)
@@ -154,7 +168,7 @@ namespace WebApi.Services.EmlakAz
                                             }
                                             announce.parser_site = model.site;
                                             /////////////////////////// ImageUploader //////////////////////////////
-                                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
+                                        var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                         var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
                                         if (images != null)
                                         {
@@ -165,7 +179,7 @@ namespace WebApi.Services.EmlakAz
 
 
 
-                                            announce.cover = $@"\UploadFile\EmlakAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}\Thumb.jpg";
+                                            announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
                                             announce.announce_date = DateTime.Now;
                                             unitOfWork.Announces.Create(announce);
                                             counter = 0;
