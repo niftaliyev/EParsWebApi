@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Proxy;
 using WebApi.Repository;
+using WebApi.ViewModels;
 
 namespace WebApi.Services
 {
@@ -19,7 +20,7 @@ namespace WebApi.Services
             this.unitOfWork = unitOfWork;
             this.proxysHttp = proxysHttp;
         }
-        public async void CheckAsync(HttpClient httpClient,params string[] numbers)
+        public async void CheckAsync(HttpClient httpClient,int id,params string[] numbers)
         {
             try
             {
@@ -52,16 +53,20 @@ namespace WebApi.Services
                                     
                                     if (result != null)
                                     {
-                                        if (result.Trim() == "Vasitəçi deyil")
-                                        {
-                                            Console.WriteLine(result.Trim());
-                                            unitOfWork.OwnerRepository.Create(new Owner { Phone = numbers[i] });
-                                        }
-                                        else if (result.Trim() == "Vasitəçidir")
+                                        if (result.Trim() == "Vasitəçidir")
                                         {
                                             Console.WriteLine(result.Trim());
                                             unitOfWork.RieltorRepository.Create(new Rieltor { Phone = numbers[i] });
+                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 2 });
+
                                         }
+                                        else if (result.Trim() == "Vasitəçi deyil")
+                                        {
+                                            Console.WriteLine(result.Trim());
+                                            unitOfWork.OwnerRepository.Create(new Owner { Phone = numbers[i] });
+                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
+                                        }
+                                        
                                         else
                                         {
                                             Console.WriteLine(result.Trim());

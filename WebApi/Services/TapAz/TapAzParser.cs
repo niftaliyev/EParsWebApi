@@ -14,6 +14,7 @@ namespace WebApi.Services.TapAz
         private readonly EmlakBaza _emlakBaza; //если не используется заче он здесь. мусор
         private readonly TapAzImageUploader _uploader;
         private readonly HttpClientCreater clientCreater;
+        private static bool isActive = false;
         private readonly UnitOfWork unitOfWork;
         private HttpClient _httpClient;
         HttpResponseMessage header;
@@ -33,183 +34,189 @@ namespace WebApi.Services.TapAz
         {
             var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");
 
-            if (!model.isActive)
+            if (!isActive)
             {
-                try
+                if (model.isActive)
                 {
-                    var id = model.last_id;
-
-                    model.isActive = true;
-                    unitOfWork.ParserAnnounceRepository.Update(model);
-                    int x = 0;
-                    int count = 0;
-                    int duration = 0;
-                    while (true)
+                    try
                     {
-                        if (count >= 10)
+                        var id = model.last_id;
+
+                        isActive = true;
+                        unitOfWork.ParserAnnounceRepository.Update(model);
+                        int x = 0;
+                        int count = 0;
+                        int duration = 0;
+                        while (true)
                         {
-                            x++;
-                            if (x >= 350)
-                                x = 0;
-
-                            _httpClient = clientCreater.Create(proxies[x]);
-                            count = 0;
-                        }
-                        Console.WriteLine(x);
-
-                        try
-                        {
-                            Uri myUri = new Uri($"{model.site}/elanlar/-/-/{++id}", UriKind.Absolute);
-                            header = await _httpClient.GetAsync(myUri);
-                            var url = header.RequestMessage.RequestUri.AbsoluteUri;
-                            count++;
-                            HtmlDocument doc = new HtmlDocument();
-
-                            if (header.RequestMessage.RequestUri.ToString().StartsWith("https://tap.az/elanlar/dasinmaz-emlak/"))
+                            if (count >= 10)
                             {
-                                var response = await _httpClient.GetAsync(url);
-                                Console.WriteLine(response.StatusCode.ToString());
+                                x++;
+                                if (x >= 350)
+                                    x = 0;
 
+                                _httpClient = clientCreater.Create(proxies[x]);
+                                count = 0;
+                            }
+                            Console.WriteLine(x);
 
-                                if (response.IsSuccessStatusCode)
+                            try
+                            {
+                                Uri myUri = new Uri($"{model.site}/elanlar/-/-/{++id}", UriKind.Absolute);
+                                header = await _httpClient.GetAsync(myUri);
+                                var url = header.RequestMessage.RequestUri.AbsoluteUri;
+                                count++;
+                                HtmlDocument doc = new HtmlDocument();
+
+                                if (header.RequestMessage.RequestUri.ToString().StartsWith("https://tap.az/elanlar/dasinmaz-emlak/"))
                                 {
-                                    var html = await response.Content.ReadAsStringAsync();
-                                    if (!string.IsNullOrEmpty(html))
+                                    var response = await _httpClient.GetAsync(url);
+                                    Console.WriteLine(response.StatusCode.ToString());
+
+
+                                    if (response.IsSuccessStatusCode)
                                     {
-                                        doc.LoadHtml(html);
-                                        Announce announce = new Announce();
-
-                                        if (doc.DocumentNode.SelectSingleNode(".//a[@class='phone']") != null)
+                                        var html = await response.Content.ReadAsStringAsync();
+                                        if (!string.IsNullOrEmpty(html))
                                         {
-                                            if (doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']") != null)
-                                                announce.price =Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", ""));
+                                            doc.LoadHtml(html);
+                                            Announce announce = new Announce();
 
-                                            //if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
-                                            //announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
-                                            if (doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p") != null)
-                                                announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p").InnerText;
-
-
-                                            string mobileregex = doc.DocumentNode.SelectSingleNode(".//a[@class='phone']").InnerText;
-
-                                            if (mobileregex != null)
+                                            if (doc.DocumentNode.SelectSingleNode(".//a[@class='phone']") != null)
                                             {
-                                                var charsToRemove = new string[] { "(", ")", "-", ".", " " };
-                                                foreach (var c in charsToRemove)
-                                                {
-                                                    mobileregex = mobileregex.Replace(c, string.Empty);
-                                                }
-                                                var numberList = mobileregex.Split(',');
+                                                if (doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']") != null)
+                                                    announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", ""));
+
+                                                //if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
+                                                //announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
+                                                if (doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p") != null)
+                                                    announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p").InnerText;
+
+
+                                                string mobileregex = doc.DocumentNode.SelectSingleNode(".//a[@class='phone']").InnerText;
 
                                                 if (mobileregex != null)
-                                                    announce.mobile = mobileregex;
-
-
-                                                var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                                var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
-                                                if (checkNumberRieltorResult > 0)
                                                 {
-                                                    announce.announcer = checkNumberRieltorResult;
+                                                    var charsToRemove = new string[] { "(", ")", "-", ".", " " };
+                                                    foreach (var c in charsToRemove)
+                                                    {
+                                                        mobileregex = mobileregex.Replace(c, string.Empty);
+                                                    }
+                                                    var numberList = mobileregex.Split(',');
+
+                                                    if (mobileregex != null)
+                                                        announce.mobile = mobileregex;
+
+
+                                                    var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                                    var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
+                                                    if (checkNumberRieltorResult > 0)
+                                                    {
+                                                        announce.announcer = checkNumberRieltorResult;
+                                                    }
+                                                    else if (checkNumberOwnerResult > 0)
+                                                    {
+                                                        announce.announcer = checkNumberOwnerResult;
+                                                    }
+                                                    else
+                                                    {
+                                                        //EMLAK - BAZASI
+                                                        _emlakBaza.CheckAsync(_httpClient, id, numberList);
+                                                    }
                                                 }
-                                                else if (checkNumberOwnerResult > 0)
+                                                Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText);
+                                                Console.WriteLine(mobileregex);
+
+                                                if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2] != null)
                                                 {
-                                                    announce.announcer = checkNumberOwnerResult;
+                                                    if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Bugün"))
+                                                        announce.original_date = DateTime.Now.ToShortDateString();
+
+                                                    if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Dünən"))
+                                                        announce.original_date = DateTime.Now.AddDays(-1).ToShortDateString();
+                                                    else
+                                                        if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "") != null)
+                                                        announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "");
                                                 }
-                                                else
+
+
+                                                var countPropertyName = doc.DocumentNode.SelectNodes(".//td[@class='property-name']").Count;
+                                                for (int i = 0; i < countPropertyName; i++)
                                                 {
-                                                    //EMLAK - BAZASI
-                                                    _emlakBaza.CheckAsync(_httpClient, numberList);
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Otaq sayı")
+                                                        announce.room_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri")
+                                                        announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
+
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == "Satılır")
+                                                        announce.announce_type = 1;
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == "İcarəyə verilir")
+                                                        announce.announce_type = 2;
+
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.StartsWith("Sahə, m²"))
+                                                        announce.space = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].LastChild.InnerText;
                                                 }
+                                                announce.original_id = id;
+                                                announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
+                                                announce.region_id = 5;
+                                                announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
+                                                announce.parser_site = model.site;
+                                                announce.announce_date = DateTime.Now;
+
+                                                Console.WriteLine(proxies[x]);
+
+                                                //var filePath = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
+                                                //var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                                //announce.logo_images = JsonSerializer.Serialize(await images);
+                                                duration = 0;
+                                                unitOfWork.Announces.Create(announce);
+
                                             }
-                                            Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText);
-                                            Console.WriteLine(mobileregex);
-
-                                            if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2] != null)
-                                            {
-                                                if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Bugün"))
-                                                    announce.original_date = DateTime.Now.ToShortDateString();
-
-                                                if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Contains("Dünən"))
-                                                    announce.original_date = DateTime.Now.AddDays(-1).ToShortDateString();
-                                                else
-                                                    if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "") != null)
-                                                    announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2].InnerText.Replace("Yeniləndi: ", "");
-                                            }
-                                           
-
-                                            var countPropertyName = doc.DocumentNode.SelectNodes(".//td[@class='property-name']").Count;
-                                            for (int i = 0; i < countPropertyName; i++)
-                                            {
-                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Otaq sayı")
-                                                    announce.room_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
-                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri")
-                                                    announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
-
-                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == "Satılır")
-                                                    announce.announce_type = 1;
-                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == "İcarəyə verilir")
-                                                    announce.announce_type = 2;
-
-                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.StartsWith("Sahə, m²"))
-                                                    announce.space = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].LastChild.InnerText;
-                                            }
-                                            announce.original_id = id;
-                                            announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
-                                            announce.region_id = 5;
-                                            announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
-                                            announce.parser_site = model.site;
-                                            announce.announce_date = DateTime.Now;
-
-                                            Console.WriteLine(proxies[x]);
-
-                                            //var filePath = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
-                                            //var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
-                                            //announce.logo_images = JsonSerializer.Serialize(await images);
-                                            duration = 0;
-                                            unitOfWork.Announces.Create(announce);
 
                                         }
-                                        
                                     }
-                                }
-                                
-                            }// emlak if end
-                           
-                            Console.WriteLine(header.StatusCode);
-                            if (header.StatusCode.ToString() == "NotFound")
-                            {
-                                duration++;
-                            }
-                            if (header.StatusCode.ToString() == "OK")
-                            {
-                                if (doc.DocumentNode.SelectSingleNode(".//a[@class='phone']") == null)
+
+                                }// emlak if end
+
+                                Console.WriteLine(header.StatusCode);
+                                if (header.StatusCode.ToString() == "NotFound")
                                 {
                                     duration++;
                                 }
+                                if (header.StatusCode.ToString() == "OK")
+                                {
+                                    if (doc.DocumentNode.SelectSingleNode(".//a[@class='phone']") == null)
+                                    {
+                                        duration++;
+                                    }
+                                }
+                                if (duration >= 50)
+                                {
+                                    model.last_id = (id - 50);
+                                    Console.WriteLine("******** END **********");
+                                    isActive = false;
+                                    unitOfWork.ParserAnnounceRepository.Update(model);
+                                    duration = 0;
+                                    break;
+                                }
                             }
-                            if (duration >= 115)
+                            catch (Exception e)
                             {
-                                model.last_id = (id - 115);
-                                model.isActive = false;
-                                unitOfWork.ParserAnnounceRepository.Update(model);
-                                duration = 0;
-                                break;
-                            }
-                        }
-                        catch (Exception e)
-                        {
 
-                            Console.WriteLine($"no connection {e.Message}");
-                            count = 10;
-                        }
-                    } // while end
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
+                                Console.WriteLine($"no connection {e.Message}");
+                                count = 10;
+                            }
+                        } // while end
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
                 }
 
             }
+
         }
     }
 }
