@@ -64,4 +64,3 @@ namespace WebApi.Services.YeniEmlakAz
         }
     }
 }
-/////////////dev
