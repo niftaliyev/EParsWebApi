@@ -34,7 +34,8 @@ namespace WebApi
             });
 
             services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlaksoon;SslMode = none;"));
-            //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=emlakcrawler;Pwd=elgun123;Database=emlakcrawler;SslMode = none;"));
+            //services.AddTransient(x => new UnitOfWork($"Server=localhost;Port=3306;Uid={Configuration["ConnectionStrings:username"]};Pwd={Configuration["ConnectionStrings:password"]};Database={Configuration["ConnectionStrings:dbname"]};SslMode = none;"));
+            //services.AddTransient(x => new UnitOfWork($"Server=localhost;Port=3306;Uid=emlakcrawler;Pwd=elgun123;Database=emlakcrawler;SslMode = none;"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
