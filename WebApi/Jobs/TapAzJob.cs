@@ -5,10 +5,10 @@ using WebApi.Services.TapAz;
 
 namespace WebApi.Jobs
 {
-    public class RecordsJob : IJob
+    public class TapAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        public RecordsJob(IServiceScopeFactory serviceScopeFactory)
+        public TapAzJob(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
         }

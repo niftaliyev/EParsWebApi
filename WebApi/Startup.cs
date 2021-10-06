@@ -27,6 +27,12 @@ namespace WebApi
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddProxyServerConfigurations(options =>
+            {
+                options.Username = Configuration["ProxyServer:UsernameProxyServer"];
+                options.Password = Configuration["ProxyServer:PasswordProxyServer"];
+            });
+
             services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlaksoon;SslMode = none;"));
             //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=emlakcrawler;Pwd=elgun123;Database=emlakcrawler;SslMode = none;"));
             services.AddControllers();
@@ -37,20 +43,19 @@ namespace WebApi
             services.AddHttpClient();
             services.AddTransient<FileUploadHelper>();
             services.AddTransient<HttpClientCreater>();
+
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddParsers();
             services.AddJobs();
-            
             services.AddHttpClient<ProxysHttpClient>().
                 ConfigurePrimaryHttpMessageHandler((c => new HttpClientHandler()
                 {
                     Proxy = new WebProxy(Configuration["ProxyOptions:Address"])
                     {
-                        Credentials = new NetworkCredential { UserName = Configuration["ProxyOptions:Username"], Password = Configuration["ProxyOptions:Password"] }
+                        Credentials = new NetworkCredential { UserName = Configuration["ProxyServer:Username"], Password = Configuration["ProxyServer:Password"] }
                     }
                 }));
             services.AddCors(); // добавляем сервисы CORS
-
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

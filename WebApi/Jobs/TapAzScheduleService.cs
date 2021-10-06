@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace WebApi.Jobs
 {
-    public class RecordsScheduleService : JobScheduleService<RecordsJob>
+    public class TapAzScheduleService : JobScheduleService<TapAzJob>
     {
-        public RecordsScheduleService(IServiceProvider serviceProvider) : base(serviceProvider)
+        public TapAzScheduleService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
         protected override TriggerBuilder ConfigureTrigger(TriggerBuilder triggerBuilder)

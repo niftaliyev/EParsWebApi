@@ -14,7 +14,8 @@ namespace WebApi.Repository
         private readonly Lazy<ParserAnnounceRepository> parserAnnounceRepository;
         private readonly Lazy<RieltorRepository> rieltorRepository;
         private readonly Lazy<OwnerRepository> ownerRepository;
-        private readonly Lazy<CitiesRepository> citiesRepository;
+        private readonly Lazy<CitiesRepository> citiesRepository; 
+        private readonly Lazy<CheckNumberRepository> checkNumberRepository; 
 
 
         public UnitOfWork(string connectionString)
@@ -25,6 +26,7 @@ namespace WebApi.Repository
             rieltorRepository = new Lazy<RieltorRepository>(() => new RieltorRepository(connection));
             ownerRepository = new Lazy<OwnerRepository>(() => new OwnerRepository(connection));
             citiesRepository = new Lazy<CitiesRepository>(() => new CitiesRepository(connection));
+            checkNumberRepository = new Lazy<CheckNumberRepository>(() => new CheckNumberRepository(connection));
         }
 
         public AnnouncesRepository Announces => announcesRepository.Value;
@@ -32,6 +34,7 @@ namespace WebApi.Repository
         public RieltorRepository RieltorRepository => rieltorRepository.Value;
         public OwnerRepository OwnerRepository => ownerRepository.Value;
         public CitiesRepository CitiesRepository => citiesRepository.Value;
+        public CheckNumberRepository CheckNumberRepository => checkNumberRepository.Value;
 
 
         public void Dispose()

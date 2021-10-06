@@ -25,8 +25,8 @@ namespace WebApi.Services.TapAz
             this.clientCreater = clientCreater;
             this.unitOfWork = unitOfWork;
             proxies = File.ReadAllLines("proxies.txt");
-            // _httpClient = clientCreater.Create(proxies[0]);
-            _httpClient = httpClient;
+             _httpClient = clientCreater.Create(proxies[0]);
+            //_httpClient = httpClient;
             Console.WriteLine(proxies[0]);
         }
         public async Task TapAzPars()
@@ -46,16 +46,16 @@ namespace WebApi.Services.TapAz
                     int duration = 0;
                     while (true)
                     {
-                        //if (count >= 10)
-                        //{
-                        //    x++;
-                        //    if (x >= 350)
-                        //        x = 0;
+                        if (count >= 10)
+                        {
+                            x++;
+                            if (x >= 350)
+                                x = 0;
 
-                        //    _httpClient = clientCreater.Create(proxies[x]);
-                        //    count = 0;
-                        //}
-                        //Console.WriteLine(x);
+                            _httpClient = clientCreater.Create(proxies[x]);
+                            count = 0;
+                        }
+                        Console.WriteLine(x);
 
                         try
                         {
@@ -105,8 +105,21 @@ namespace WebApi.Services.TapAz
                                                     announce.mobile = mobileregex;
 
 
-                                                //EMLAK - BAZASI
-                                                _emlakBaza.CheckAsync(numberList); 
+                                                var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                                var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
+                                                if (checkNumberRieltorResult > 0)
+                                                {
+                                                    announce.announcer = checkNumberRieltorResult;
+                                                }
+                                                else if (checkNumberOwnerResult > 0)
+                                                {
+                                                    announce.announcer = checkNumberOwnerResult;
+                                                }
+                                                else
+                                                {
+                                                    //EMLAK - BAZASI
+                                                    _emlakBaza.CheckAsync(_httpClient, numberList);
+                                                }
                                             }
                                             Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText);
                                             Console.WriteLine(mobileregex);
@@ -141,8 +154,7 @@ namespace WebApi.Services.TapAz
                                                     announce.space = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].LastChild.InnerText;
                                             }
                                             announce.original_id = id;
-                                            announce.cover = $@"\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}\Thumb.jpg";
-                                            announce.images = $@"\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}";
+                                            announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
                                             announce.region_id = 5;
                                             announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                             announce.parser_site = model.site;
@@ -150,9 +162,9 @@ namespace WebApi.Services.TapAz
 
                                             Console.WriteLine(proxies[x]);
 
-                                            var filePath = Path.Combine(Directory.GetCurrentDirectory(), $@"wwwroot\UploadFile\TapAz\{DateTime.Now.Year}\{DateTime.Now.Month}\{id}");
-                                            var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
-                                            announce.logo_images = JsonSerializer.Serialize(await images);
+                                            //var filePath = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
+                                            //var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                            //announce.logo_images = JsonSerializer.Serialize(await images);
                                             duration = 0;
                                             unitOfWork.Announces.Create(announce);
 

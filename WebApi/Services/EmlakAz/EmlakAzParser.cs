@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
-using IronOcr;
 using WebApi.Services.EmlakAz.Interfaces;
 
 namespace WebApi.Services.EmlakAz
@@ -20,7 +19,7 @@ namespace WebApi.Services.EmlakAz
         private readonly UnitOfWork unitOfWork;
         private readonly ITypeOfProperty typeOfProperty;
         HttpResponseMessage header;
-
+        static bool turn = false;
         public EmlakAzParser(HttpClient httpClient, EmlakBaza emlakBaza, EmlakAzImageUploader uploader, UnitOfWork unitOfWork,ITypeOfProperty typeOfProperty)
         {
             this.httpClient = httpClient;
@@ -36,6 +35,7 @@ namespace WebApi.Services.EmlakAz
 
             if (!model.isActive)
             {
+                turn = true;
                 var id = model.last_id;
                 int counter = 0;
                 model.isActive = true;
@@ -83,8 +83,23 @@ namespace WebApi.Services.EmlakAz
                                             announce.mobile = mobileregex;
 
 
-                                        //EMLAK - BAZASI
-                                        //_emlakBaza.CheckAsync(numberList);
+
+                                        var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                        var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
+                                        if (checkNumberRieltorResult > 0)
+                                        {
+                                            announce.announcer = checkNumberRieltorResult;
+                                        }
+                                        else if (checkNumberOwnerResult > 0)
+                                        {
+                                            announce.announcer = checkNumberOwnerResult;
+                                        }
+                                        else
+                                        {
+                                            announce.announcer = 1;
+                                            //EMLAK - BAZASI
+                                            _emlakBaza.CheckAsync(httpClient, numberList);
+                                        }
 
                                         Regex regex = new Regex("\\d+");
                                         if (doc.DocumentNode.SelectSingleNode(".//p[@class='pull-right']") != null)
@@ -140,7 +155,7 @@ namespace WebApi.Services.EmlakAz
                                                 announce.announcer = 2;
                                         }
 
-
+                                        Console.WriteLine(turn);
 
                                         if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']") != null)
                                             announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText.Replace(" ", string.Empty)); 
@@ -169,10 +184,11 @@ namespace WebApi.Services.EmlakAz
                                             announce.parser_site = model.site;
                                             /////////////////////////// ImageUploader //////////////////////////////
                                         var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
-                                        var images = _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
+                                        var images = await _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
                                         if (images != null)
                                         {
-                                            var jsonImages = JsonSerializer.Serialize(await images);
+                                            
+                                            var jsonImages = string.Join(',', images);
                                             if (jsonImages != null)
                                                 announce.logo_images = jsonImages;
                                         }
@@ -191,14 +207,17 @@ namespace WebApi.Services.EmlakAz
                         {
                             Console.WriteLine("404");
                             Console.WriteLine(id);
+                            Console.WriteLine(turn);
                             counter++;
                             if (counter >= 50)
                             {
                                 model.last_id = (id - 50);
                                 model.isActive = false;
+                                turn = false;
                                 unitOfWork.ParserAnnounceRepository.Update(model);
                                 counter = 0;
                                 Console.WriteLine("= 50 =");
+                                Console.WriteLine(turn);
                                 break;
 
                             }

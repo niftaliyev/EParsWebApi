@@ -38,11 +38,10 @@ namespace WebApi.Services.TapAz
 
                         }
 
-                        if (!Directory.Exists(filePath))
-                        {
-                            Directory.CreateDirectory(filePath);
-
-                        }
+                        //if (!Directory.Exists(filePath))
+                        //{
+                        //    Directory.CreateDirectory(filePath);
+                        //}
 
                         var filename = Guid.NewGuid().ToString();
                         var uri = new Uri(link);
@@ -50,10 +49,10 @@ namespace WebApi.Services.TapAz
                         var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                         var fileExtension = Path.GetExtension(uriWithoutQuery);
 
-                        await _fileUploadHelper.DownloadImageAsync(filePath, filename,uri, httpClient);
+                        await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
 
-                        var indexStartUpload = filePath.IndexOf("UploadFile");
-                        var fileEndPath = $"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}";
+                        //var indexStartUpload = filePath.IndexOf("UploadFile");
+                        var fileEndPath = $"{filePath}{filename}{fileExtension}";
                         images.Add(fileEndPath);
                        
                     }

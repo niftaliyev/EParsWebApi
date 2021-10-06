@@ -11,10 +11,10 @@ namespace WebApi.Extensions
     {
         public static IServiceCollection AddJobs(this IServiceCollection services)
         {
-            services.AddTransient<RecordsJob>();
-            services.AddHostedService<RecordsScheduleService>();
-            services.AddTransient<EmlakAzJob>();
-            services.AddHostedService<EmlakAzScheduleService>();
+            services.AddTransient<TapAzJob>();
+            services.AddHostedService<TapAzScheduleService>();
+            //services.AddTransient<EmlakAzJob>();
+            //services.AddHostedService<EmlakAzScheduleService>();
             //services.AddTransient<YeniEmlakAzJob>();
             //services.AddHostedService<YeniEmlakAzScheduleService>();
             return services;

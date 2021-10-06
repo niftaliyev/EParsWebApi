@@ -13,15 +13,13 @@ namespace WebApi.Services
     {
         private readonly UnitOfWork unitOfWork;
         private readonly ProxysHttpClient proxysHttp;
-        private readonly HttpClient httpClient;
 
-        public EmlakBaza(UnitOfWork unitOfWork, ProxysHttpClient proxysHttp,HttpClient httpClient)
+        public EmlakBaza(UnitOfWork unitOfWork, ProxysHttpClient proxysHttp)
         {
             this.unitOfWork = unitOfWork;
             this.proxysHttp = proxysHttp;
-            this.httpClient = httpClient;
         }
-        public async void CheckAsync(params string[] numbers)
+        public async void CheckAsync(HttpClient httpClient,params string[] numbers)
         {
             try
             {
