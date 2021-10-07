@@ -21,6 +21,7 @@ namespace WebApi.Services.EmlakAz
         private readonly ITypeOfProperty typeOfProperty;
         HttpResponseMessage header;
         static bool turn = false;
+        public int maxRequest = 50;
         public EmlakAzParser(HttpClient httpClient, EmlakBaza emlakBaza, EmlakAzImageUploader uploader, UnitOfWork unitOfWork,ITypeOfProperty typeOfProperty)
         {
             this.httpClient = httpClient;
@@ -211,14 +212,14 @@ namespace WebApi.Services.EmlakAz
                                 Console.WriteLine(id);
                                 Console.WriteLine(turn);
                                 counter++;
-                                if (counter >= 50)
+                                if (counter >= maxRequest)
                                 {
-                                    model.last_id = (id - 50);
+                                    model.last_id = (id - maxRequest);
                                     isActive = false;
                                     turn = false;
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     counter = 0;
-                                    Console.WriteLine("= 50 =");
+                                    Console.WriteLine($"= {maxRequest} = ");
                                     Console.WriteLine(turn);
                                     break;
 

@@ -18,6 +18,7 @@ namespace WebApi.Services.TapAz
         private readonly UnitOfWork unitOfWork;
         private HttpClient _httpClient;
         HttpResponseMessage header;
+        public int maxRequest = 50;
         static string[] proxies; // лучше добавить ентер
         public TapAzParser(EmlakBaza emlakBaza, TapAzImageUploader uploader, HttpClientCreater clientCreater, UnitOfWork unitOfWork,HttpClient httpClient)
         {
@@ -190,9 +191,9 @@ namespace WebApi.Services.TapAz
                                         duration++;
                                     }
                                 }
-                                if (duration >= 50)
+                                if (duration >= maxRequest)
                                 {
-                                    model.last_id = (id - 50);
+                                    model.last_id = (id - maxRequest);
                                     Console.WriteLine("******** END **********");
                                     isActive = false;
                                     unitOfWork.ParserAnnounceRepository.Update(model);
