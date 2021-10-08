@@ -121,7 +121,7 @@ namespace WebApi.Services.EmlakAz
                                                     if (item.InnerText.StartsWith("Əmlakın növü"))
                                                         announce.property_type = typeOfProperty.GetTypeOfProperty(item.InnerText);
                                                     if (item.InnerText.StartsWith("Sahə"))
-                                                        announce.space = regex.Match(item.InnerText).ToString();
+                                                        announce.space = Int32.Parse(regex.Match(item.InnerText).ToString());
                                                     if (item.InnerText.StartsWith("Otaqların sayı"))
                                                         announce.floor_count = Int32.Parse(item.LastChild.InnerText);
                                                     if (item.InnerText.StartsWith("Otaqların sayı"))

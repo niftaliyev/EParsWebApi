@@ -28,7 +28,7 @@ namespace WebApi.Models
         public string google_map { get; set; }
         public int floor_count { get; set; }
         public int current_floor { get; set; }
-        public string space { get; set; }
+        public int space { get; set; }
         public int document { get; set; }
         public string communal { get; set; }
         public string text { get; set; }

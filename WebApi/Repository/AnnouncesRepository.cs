@@ -63,7 +63,7 @@ namespace WebApi.Repository
         {
             await Task.Run(() =>
             {
-                string uQuery = "UPDATE announces SET announcer = @Announcer WHERE original_id = @OriginalId";
+                string uQuery = "UPDATE announces SET announcer = @Announcer , number_checked = true WHERE original_id = @OriginalId";
                 connection.Execute(uQuery, updateViewModel);
             });
 

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
+using WebApi.Services.TapAz.Interfaces;
 
 namespace WebApi.Services.TapAz
 {
@@ -16,16 +17,18 @@ namespace WebApi.Services.TapAz
         private readonly HttpClientCreater clientCreater;
         private static bool isActive = false;
         private readonly UnitOfWork unitOfWork;
+        private readonly ITypeOfPropertyTapAz typeOfPropertyTapAz;
         private HttpClient _httpClient;
         HttpResponseMessage header;
         public int maxRequest = 50;
         static string[] proxies; // лучше добавить ентер
-        public TapAzParser(EmlakBaza emlakBaza, TapAzImageUploader uploader, HttpClientCreater clientCreater, UnitOfWork unitOfWork,HttpClient httpClient)
+        public TapAzParser(EmlakBaza emlakBaza, TapAzImageUploader uploader, HttpClientCreater clientCreater, UnitOfWork unitOfWork,HttpClient httpClient, ITypeOfPropertyTapAz typeOfPropertyTapAz)
         {
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
             this.clientCreater = clientCreater;
             this.unitOfWork = unitOfWork;
+            this.typeOfPropertyTapAz = typeOfPropertyTapAz;
             proxies = File.ReadAllLines("proxies.txt");
              _httpClient = clientCreater.Create(proxies[0]);
             //_httpClient = httpClient;
@@ -114,10 +117,13 @@ namespace WebApi.Services.TapAz
                                                     if (checkNumberRieltorResult > 0)
                                                     {
                                                         announce.announcer = checkNumberRieltorResult;
+                                                        announce.number_checked = true;
+
                                                     }
                                                     else if (checkNumberOwnerResult > 0)
                                                     {
                                                         announce.announcer = checkNumberOwnerResult;
+                                                        announce.number_checked = true;
                                                     }
                                                     else
                                                     {
@@ -146,16 +152,23 @@ namespace WebApi.Services.TapAz
                                                 {
                                                     if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Otaq sayı")
                                                         announce.room_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                    ///////////// dev
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Binanın tipi" || doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Əmlakın növü")
+                                                        announce.property_type = typeOfPropertyTapAz.GetTitleOfProperty(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Elanın tipi")
+                                                        announce.announce_type = typeOfPropertyTapAz.GetTypeOfProperty(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+
+
                                                     if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri")
                                                         announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
 
-                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == "Satılır")
-                                                        announce.announce_type = 1;
-                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == "İcarəyə verilir")
-                                                        announce.announce_type = 2;
 
-                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.StartsWith("Sahə, m²"))
-                                                        announce.space = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].LastChild.InnerText;
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText.StartsWith("Sahə, m²"))
+                                                        announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+
+                                                    /////yerlesme yeri
+                                                    //if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == ("Yerləşmə yeri"))
+                                                    //    announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
                                                 }
                                                 announce.original_id = id;
                                                 announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";

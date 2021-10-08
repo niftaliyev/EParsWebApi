@@ -15,6 +15,7 @@ using WebApi.Services;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakAz.Interfaces;
 using WebApi.Services.TapAz;
+using WebApi.Services.TapAz.Interfaces;
 
 namespace WebApi
 {
@@ -46,6 +47,7 @@ namespace WebApi
             services.AddTransient<HttpClientCreater>();
 
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
+            services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
             services.AddParsers();
             services.AddJobs();
             services.AddHttpClient<ProxysHttpClient>().
