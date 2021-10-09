@@ -12,23 +12,31 @@ namespace WebApi.Services.TapAz
 {
     public class TapAzParser
     {
-        private readonly EmlakBaza _emlakBaza; //если не используется заче он здесь. мусор
+        private readonly EmlakBaza _emlakBaza;
         private readonly TapAzImageUploader _uploader;
         private readonly HttpClientCreater clientCreater;
         private static bool isActive = false;
         private readonly UnitOfWork unitOfWork;
         private readonly ITypeOfPropertyTapAz typeOfPropertyTapAz;
+        private readonly TapAzMetrosNames metrosNames;
         private HttpClient _httpClient;
         HttpResponseMessage header;
         public int maxRequest = 50;
         static string[] proxies; // лучше добавить ентер
-        public TapAzParser(EmlakBaza emlakBaza, TapAzImageUploader uploader, HttpClientCreater clientCreater, UnitOfWork unitOfWork,HttpClient httpClient, ITypeOfPropertyTapAz typeOfPropertyTapAz)
+        public TapAzParser(EmlakBaza emlakBaza, 
+            TapAzImageUploader uploader, 
+            HttpClientCreater clientCreater, 
+            UnitOfWork unitOfWork,
+            HttpClient httpClient, 
+            ITypeOfPropertyTapAz typeOfPropertyTapAz,
+            TapAzMetrosNames metrosNames)
         {
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
             this.clientCreater = clientCreater;
             this.unitOfWork = unitOfWork;
             this.typeOfPropertyTapAz = typeOfPropertyTapAz;
+            this.metrosNames = metrosNames;
             proxies = File.ReadAllLines("proxies.txt");
              _httpClient = clientCreater.Create(proxies[0]);
             //_httpClient = httpClient;
@@ -36,8 +44,7 @@ namespace WebApi.Services.TapAz
         }
         public async Task TapAzPars()
         {
-            var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");
-
+            var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");            
             if (!isActive)
             {
                 if (model.isActive)
@@ -56,7 +63,7 @@ namespace WebApi.Services.TapAz
                             if (count >= 10)
                             {
                                 x++;
-                                if (x >= 350)
+                                if (x >= 10)
                                     x = 0;
 
                                 _httpClient = clientCreater.Create(proxies[x]);
@@ -158,9 +165,51 @@ namespace WebApi.Services.TapAz
                                                     if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Elanın tipi")
                                                         announce.announce_type = typeOfPropertyTapAz.GetTypeOfProperty(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
 
-
-                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri")
+                                                    
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri" || doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşmə yeri")
+                                                    {
+                                                        Console.WriteLine("Yerləşdirmə");
                                                         announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
+                                                        if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" m."))
+                                                        {
+                                                            var metroName = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
+                                                            var resultMetroName = metrosNames.MetroName(metroName);
+                                                            var metros = unitOfWork.MetrosRepository.GetAll();
+                                                            
+                                                            foreach (var item in metros)
+                                                            {
+                                                                if (resultMetroName == item.name)
+                                                                {
+                                                                    Console.WriteLine($"*********** RESULT {item.name} //////////////////");
+                                                                    announce.metro_id = item.id;
+                                                                    announce.region_id = item.region_id;
+                                                                    announce.settlement_id = item.settlement_id;
+                                                                    break;
+                                                                }
+                                                            }
+                                                            Console.WriteLine("metroo******************");
+                                                        }
+                                                        else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" qəs."))
+                                                        {
+                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            Console.WriteLine("qesebe******************");
+                                                        }
+                                                        else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" ş."))
+                                                        {
+                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            Console.WriteLine("Seher******************");
+                                                        }
+                                                        else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" r."))
+                                                        {
+                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            Console.WriteLine("Rayon******************");
+                                                        }
+                                                        else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" pr."))
+                                                        {
+                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            Console.WriteLine("Prospekt******************");
+                                                        }
+                                                    }
 
 
                                                     if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText.StartsWith("Sahə, m²"))

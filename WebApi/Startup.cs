@@ -45,6 +45,7 @@ namespace WebApi
             services.AddHttpClient();
             services.AddTransient<FileUploadHelper>();
             services.AddTransient<HttpClientCreater>();
+            services.AddTransient<TapAzMetrosNames>();
 
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
