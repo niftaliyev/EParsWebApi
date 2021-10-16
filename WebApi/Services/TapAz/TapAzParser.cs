@@ -63,7 +63,7 @@ namespace WebApi.Services.TapAz
                             if (count >= 10)
                             {
                                 x++;
-                                if (x >= 10)
+                                if (x >= 350)
                                     x = 0;
 
                                 _httpClient = clientCreater.Create(proxies[x]);
@@ -164,8 +164,21 @@ namespace WebApi.Services.TapAz
                                                         announce.property_type = typeOfPropertyTapAz.GetTitleOfProperty(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
                                                     if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Elanın tipi")
                                                         announce.announce_type = typeOfPropertyTapAz.GetTypeOfProperty(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Şəhər")
+                                                    {
+                                                        var cities = unitOfWork.CitiesRepository.GetAll();
+                                                        foreach (var city in cities)
+                                                        {
+                                                            if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.Contains(city.name))
+                                                            {
+                                                                announce.city_id = city.id;
+                                                                break;
 
-                                                    
+                                                            }
+                                                        }
+
+                                                    }
+
                                                     if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri" || doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşmə yeri")
                                                     {
                                                         Console.WriteLine("Yerləşdirmə");

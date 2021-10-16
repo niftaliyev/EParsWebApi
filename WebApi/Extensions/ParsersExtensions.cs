@@ -17,6 +17,7 @@ namespace WebApi.Extensions
         {
             services.AddTransient<TapAzParser>();
             services.AddTransient<EmlakBaza>();
+            services.AddTransient<EmlakBazaWithProxy>();
             services.AddTransient<TapAzImageUploader>();
             services.AddTransient<EmlakAzParser>();
             services.AddTransient<EmlakAzImageUploader>();

@@ -14,21 +14,37 @@ namespace WebApi.Services.EmlakAz
     public class EmlakAzParser
     {
         private readonly HttpClient httpClient;
-        private readonly EmlakBaza _emlakBaza;
+        private readonly EmlakBazaWithProxy _emlakBaza;
         private readonly EmlakAzImageUploader _uploader;
         private static bool isActive = false;
         private readonly UnitOfWork unitOfWork;
         private readonly ITypeOfProperty typeOfProperty;
+        private readonly EmlakAzMetrosNames metrosNames;
+        private readonly EmlakAzMarksNames marksNames;
+        private readonly EmlakAzRegionsNames regionsNames;
+        private readonly EmlakAzSettlementNames settlementNames;
         HttpResponseMessage header;
         static bool turn = false;
         public int maxRequest = 50;
-        public EmlakAzParser(HttpClient httpClient, EmlakBaza emlakBaza, EmlakAzImageUploader uploader, UnitOfWork unitOfWork,ITypeOfProperty typeOfProperty)
+        public EmlakAzParser(HttpClient httpClient,
+            EmlakBazaWithProxy emlakBaza, 
+            EmlakAzImageUploader uploader,
+            UnitOfWork unitOfWork,
+            ITypeOfProperty typeOfProperty,
+            EmlakAzMetrosNames metrosNames,
+            EmlakAzMarksNames marksNames,
+            EmlakAzRegionsNames regionsNames,
+            EmlakAzSettlementNames settlementNames)
         {
             this.httpClient = httpClient;
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
             this.unitOfWork = unitOfWork;
             this.typeOfProperty = typeOfProperty;
+            this.metrosNames = metrosNames;
+            this.marksNames = marksNames;
+            this.regionsNames = regionsNames;
+            this.settlementNames = settlementNames;
         }
 
         public async Task EmlakAzPars()
@@ -101,7 +117,7 @@ namespace WebApi.Services.EmlakAz
                                             {
                                                 announce.announcer = 1;
                                                 //EMLAK - BAZASI
-                                                _emlakBaza.CheckAsync(httpClient, id, numberList);
+                                                _emlakBaza.CheckAsync(id, numberList);
                                             }
 
                                             Regex regex = new Regex("\\d+");
@@ -111,8 +127,75 @@ namespace WebApi.Services.EmlakAz
                                                 announce.original_id = Int32.Parse(result);
                                             }
 
+                                            //////////////// METRO ID AND RENT TYPE ///////////////
                                             if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']") != null)
+                                            {
                                                 announce.rent_type = typeOfProperty.GetTitleOfProperty(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
+                                                Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
+
+                                                if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.EndsWith(" m."))
+                                                {
+                                                    var dictionaryMetrosNames = metrosNames.GetMetroNameAll();
+                                                    var originalMetrosNames = unitOfWork.MetrosRepository.GetAll();
+                                                    foreach (var dictionaryMetroName in dictionaryMetrosNames)
+                                                    {
+                                                        if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Contains(dictionaryMetroName.Key))
+                                                        {
+                                                            foreach (var originalMetroName in originalMetrosNames)
+                                                            {
+                                                                if (dictionaryMetroName.Value == originalMetroName.name)
+                                                                {
+                                                                    announce.metro_id = originalMetroName.id;
+                                                                    announce.region_id = originalMetroName.region_id;
+                                                                    announce.settlement_id = originalMetroName.settlement_id;
+                                                                    break;
+                                                                }
+                                                            }
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.EndsWith(" r."))
+                                                {
+                                                    var dictionaryRegionsNames = regionsNames.GetRegionsNamesAll();
+                                                    foreach (var regionName in dictionaryRegionsNames)
+                                                    {
+                                                        if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Contains(regionName.Key))
+                                                        {
+                                                            announce.region_id = regionName.Value;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                var marksNamesOriginal = marksNames.GetMarksNamesAll();
+
+                                                foreach (var markNameOriginal in marksNamesOriginal)
+                                                {
+                                                    if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Contains(markNameOriginal.Key))
+                                                    {
+                                                        announce.mark = markNameOriginal.Value;
+                                                        break;
+                                                    }
+                                                }
+                                                var citiesNames = unitOfWork.CitiesRepository.GetAll();
+                                                foreach (var cityName in citiesNames)
+                                                {
+                                                    if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Contains(cityName.name))
+                                                    {
+                                                        announce.city_id = cityName.id;
+                                                        break;
+                                                    }
+                                                }
+                                                var settlementsNames = settlementNames.GetSettlementsNamesAll();
+                                                foreach (var settlementName in settlementsNames)
+                                                {
+                                                    if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Contains(settlementName.Key))
+                                                    {
+                                                        announce.settlement_id = settlementName.Value;
+                                                        break;
+                                                    }
+                                                }
+                                            }    
 
                                             foreach (var item in doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd"))
                                             {
@@ -141,11 +224,6 @@ namespace WebApi.Services.EmlakAz
                                                 }
                                             }
 
-                                            //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[0] != null)
-
-                                            //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[1] != null)
-                                            //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[3] != null)
-                                            //if (doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd")[2] != null)
 
 
 
@@ -175,15 +253,7 @@ namespace WebApi.Services.EmlakAz
                                             if (doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong") != null)
                                                 announce.original_date = doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong").InnerText;
 
-                                            var cities = unitOfWork.CitiesRepository.GetAll();
-                                            foreach (var item in cities)
-                                            {
-                                                if ("Füzuli" == item.name)
-                                                {
-                                                    announce.region_id = item.id;
-
-                                                }
-                                            }
+      
                                             announce.parser_site = model.site;
                                             /////////////////////////// ImageUploader //////////////////////////////
                                             //var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
@@ -195,8 +265,25 @@ namespace WebApi.Services.EmlakAz
                                             //    if (jsonImages != null)
                                             //        announce.logo_images = jsonImages;
                                             //}
+                                            if (doc.GetElementbyId("google_map").GetAttributeValue("value","") != null)
+                                            {
+                                                var charsToRemoveMapCordinats = new string[] { "(", ")"," "};
+                                                var mapCordinats = doc.GetElementbyId("google_map").GetAttributeValue("value", "");
+                                                foreach (var c in charsToRemoveMapCordinats)
+                                                {
+                                                    mapCordinats = mapCordinats.Replace(c, string.Empty);
+                                                }
 
+                                                announce.google_map = mapCordinats;
 
+                                                var marks = unitOfWork.MarkRepository.GetMarks(mapCordinats);
+                                                foreach (var item in marks)
+                                                {
+                                                  var announceMark = new AnnounceMark { announce_id =  id, mark_id = item.id};
+                                                    unitOfWork.MarkRepository.Create(announceMark);
+                                                }   
+                                                
+                                            }
 
                                             announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
                                             announce.announce_date = DateTime.Now;

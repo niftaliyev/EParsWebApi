@@ -17,6 +17,7 @@ namespace WebApi.Repository
         private readonly Lazy<CitiesRepository> citiesRepository; 
         private readonly Lazy<CheckNumberRepository> checkNumberRepository;
         private readonly Lazy<MetrosRepository> metrosRepository;
+        private readonly Lazy<MarksRepository> marksRepository;
 
 
         public UnitOfWork(string connectionString)
@@ -29,6 +30,7 @@ namespace WebApi.Repository
             citiesRepository = new Lazy<CitiesRepository>(() => new CitiesRepository(connection));
             checkNumberRepository = new Lazy<CheckNumberRepository>(() => new CheckNumberRepository(connection));
             metrosRepository = new Lazy<MetrosRepository>(() => new MetrosRepository(connection));
+            marksRepository = new Lazy<MarksRepository>(() => new MarksRepository(connection));
         }
 
         public AnnouncesRepository Announces => announcesRepository.Value;
@@ -38,6 +40,7 @@ namespace WebApi.Repository
         public CitiesRepository CitiesRepository => citiesRepository.Value;
         public CheckNumberRepository CheckNumberRepository => checkNumberRepository.Value;
         public MetrosRepository MetrosRepository => metrosRepository.Value;
+        public MarksRepository MarkRepository => marksRepository.Value;
 
         public void Dispose()
         {

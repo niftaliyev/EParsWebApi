@@ -38,6 +38,6 @@ namespace WebApi.Models
         public string original_date { get; set; }
         public bool number_checked { get; set; }
         public bool repair { get; set; }
-
+        public int city_id { get; set; }
     }
 }
