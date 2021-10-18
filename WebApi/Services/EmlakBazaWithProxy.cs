@@ -33,7 +33,7 @@ namespace WebApi.Services
                 await Task.Run(async () =>
                 {
                     Random rnd = new Random();
-                    HttpClient httpClient = clientCreater.Create(proxies[rnd.Next(0,351)]);
+                    HttpClient httpClient = clientCreater.Create(proxies[rnd.Next(0,350)]);
                     for (int i = 0; i < numbers.Length; i++)
                     {
                         var values = new Dictionary<string, string>();
