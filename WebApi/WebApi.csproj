@@ -14,4 +14,21 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="proxies.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="publish\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="publish\appsettings.json" />
+    <_ContentIncludedByDefault Remove="publish\publish\appsettings.Development.json" />
+    <_ContentIncludedByDefault Remove="publish\publish\appsettings.json" />
+    <_ContentIncludedByDefault Remove="publish\publish\WebApi.deps.json" />
+    <_ContentIncludedByDefault Remove="publish\publish\WebApi.runtimeconfig.json" />
+    <_ContentIncludedByDefault Remove="publish\WebApi.deps.json" />
+    <_ContentIncludedByDefault Remove="publish\WebApi.runtimeconfig.json" />
+  </ItemGroup>
+
 </Project>
