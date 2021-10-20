@@ -21,7 +21,7 @@ namespace WebApi.Services.TapAz
         private readonly TapAzMetrosNames metrosNames;
         private HttpClient _httpClient;
         HttpResponseMessage header;
-        public int maxRequest = 50;
+        public int maxRequest = 200;
         static string[] proxies; // лучше добавить ентер
         public TapAzParser(EmlakBaza emlakBaza, 
             TapAzImageUploader uploader, 
@@ -234,16 +234,16 @@ namespace WebApi.Services.TapAz
                                                 }
                                                 announce.original_id = id;
                                                 announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
-                                                announce.region_id = 5;
                                                 announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                                 announce.parser_site = model.site;
                                                 announce.announce_date = DateTime.Now;
 
                                                 Console.WriteLine(proxies[x]);
 
-                                                //var filePath = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
-                                                //var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
-                                                //announce.logo_images = JsonSerializer.Serialize(await images);
+                                                ///////////////////IMAGES
+                                                var filePath = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
+                                                var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                                announce.logo_images = JsonSerializer.Serialize(await images);
                                                 duration = 0;
                                                 unitOfWork.Announces.Create(announce);
 

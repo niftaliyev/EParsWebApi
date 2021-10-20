@@ -256,15 +256,15 @@ namespace WebApi.Services.EmlakAz
       
                                             announce.parser_site = model.site;
                                             /////////////////////////// ImageUploader //////////////////////////////
-                                            //var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
-                                            //var images = await _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
-                                            //if (images != null)
-                                            //{
+                                            var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
+                                            var images = await _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
+                                            if (images != null)
+                                            {
 
-                                            //    var jsonImages = string.Join(',', images);
-                                            //    if (jsonImages != null)
-                                            //        announce.logo_images = jsonImages;
-                                            //}
+                                                var jsonImages = string.Join(',', images);
+                                                if (jsonImages != null)
+                                                    announce.logo_images = jsonImages;
+                                            }
                                             if (doc.GetElementbyId("google_map").GetAttributeValue("value","") != null)
                                             {
                                                 var charsToRemoveMapCordinats = new string[] { "(", ")"," "};

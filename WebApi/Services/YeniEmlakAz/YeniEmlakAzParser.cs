@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -72,7 +73,69 @@ namespace WebApi.Services.YeniEmlakAz
                                 {
                                     HtmlDocument doc = new HtmlDocument();
                                     doc.LoadHtml(html);
-                                    Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='text']") == null ? "not null" : doc.DocumentNode.SelectSingleNode(".//div[@class='text']").InnerText);
+
+                                    announce.parser_site = model.site;
+                                    announce.announce_date = DateTime.Now;
+                                    announce.original_id = id;
+
+                                    if (doc.DocumentNode.SelectSingleNode(".//div[@class='text']") != null)
+                                    {
+                                        announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='text']").InnerText;
+                                    }
+                                    if (doc.DocumentNode.SelectSingleNode(".//div[@class='title']//price") != null)
+                                    {
+                                        announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//div[@class='title']//price").InnerText);
+                                    }
+
+                                    if (doc.DocumentNode.SelectNodes(".//div[@class='title']//titem") != null)
+                                    {
+                                        foreach (var item1 in doc.DocumentNode.SelectNodes(".//div[@class='title']//titem"))
+                                        {
+
+                                            if (item1.InnerText.StartsWith("Tarix: "))
+                                            {
+                                                announce.original_date = item1.LastChild.InnerText;
+                                            }
+                                            if (item1.InnerText.StartsWith("Baxış sayı: "))
+                                            {
+                                                announce.view_count = Int32.Parse(item1.LastChild.InnerText);
+                                            }
+                                        }
+                                    }
+                                    if (doc.DocumentNode.SelectNodes(".//div[@class='params']") != null)
+                                    {
+                                        foreach (var item in doc.DocumentNode.SelectNodes(".//div[@class='params']"))
+                                        {
+                                            if (item.InnerText.EndsWith(" otaq"))
+                                            {
+                                                announce.room_count = Int32.Parse(item.FirstChild.InnerText);
+                                            }
+                                            if (item.InnerText.EndsWith(" m2"))
+                                            {
+                                                announce.space = Int32.Parse(item.FirstChild.InnerText);
+                                            }
+                                        }
+                                    }
+
+                                    if (doc.DocumentNode.SelectNodes(".//div[@class='tel']") != null)
+                                    {
+                                        int counPhoneImages = doc.DocumentNode.SelectNodes(".//div[@class='tel']//img").Count;
+                                        StringBuilder numbers = new StringBuilder();
+                                        string delimiter = "";
+
+                                        for (int i = 0; i < counPhoneImages; i++)
+                                        {
+                                            var numbersArr = doc.DocumentNode.SelectNodes(".//div[@class='tel']//img")[i].Attributes["src"].Value.Split('/');
+                                            var index = numbersArr.Length;
+                                            numbers.Append(delimiter);
+                                            numbers.Append(numbersArr[index - 1]);
+                                            delimiter = ",";
+                                        }
+                                        announce.mobile = numbers.ToString();
+                                        Console.WriteLine(numbers.ToString());
+                                        Console.WriteLine("----------------------------");
+                                    }
+                                    unitOfWork.Announces.Create(announce);
                                 }
                             }
                         }
