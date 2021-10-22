@@ -59,14 +59,16 @@ namespace WebApi.Repository
 
         }
 
-        public async Task UpdateAnnouncerAsync(AnnounceAnnouncerUpdateViewModel updateViewModel)
+        public Task UpdateAnnouncerAsync (AnnounceAnnouncerUpdateViewModel updateViewModel)
         {
-            await Task.Run(() =>
-            {
+            return Task.Run(() =>
+            { 
+                Console.WriteLine("STAR UPDATE");
                 string uQuery = "UPDATE announces SET announcer = @Announcer , number_checked = true WHERE original_id = @OriginalId";
+                Console.WriteLine("UPDATED");
+
                 connection.Execute(uQuery, updateViewModel);
             });
-
         }
     }
 }

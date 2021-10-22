@@ -96,29 +96,13 @@ namespace WebApi.Services.EmlakAz
                                                 mobileregex = mobileregex.Replace(c, string.Empty);
                                             }
 
-                                            var numberList = mobileregex.Split(',');
 
                                             if (mobileregex != null)
                                                 announce.mobile = mobileregex;
 
 
 
-                                            var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                            var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
-                                            if (checkNumberRieltorResult > 0)
-                                            {
-                                                announce.announcer = checkNumberRieltorResult;
-                                            }
-                                            else if (checkNumberOwnerResult > 0)
-                                            {
-                                                announce.announcer = checkNumberOwnerResult;
-                                            }
-                                            else
-                                            {
-                                                announce.announcer = 1;
-                                                //EMLAK - BAZASI
-                                                _emlakBaza.CheckAsync(id, numberList);
-                                            }
+
 
                                             Regex regex = new Regex("\\d+");
                                             if (doc.DocumentNode.SelectSingleNode(".//p[@class='pull-right']") != null)
@@ -131,7 +115,7 @@ namespace WebApi.Services.EmlakAz
                                             if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']") != null)
                                             {
                                                 announce.rent_type = typeOfProperty.GetTitleOfProperty(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
-                                                Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
+                                                //Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
 
                                                 if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.EndsWith(" m."))
                                                 {
@@ -236,7 +220,7 @@ namespace WebApi.Services.EmlakAz
                                                     announce.announcer = 2;
                                             }
 
-                                            Console.WriteLine(turn);
+                                            //Console.WriteLine(turn);
 
                                             if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']") != null)
                                                 announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText.Replace(" ", string.Empty));
@@ -289,6 +273,24 @@ namespace WebApi.Services.EmlakAz
                                             announce.announce_date = DateTime.Now;
                                             unitOfWork.Announces.Create(announce);
                                             counter = 0;
+
+                                            var numberList = mobileregex.Split(',');
+                                            var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                            var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
+                                            if (checkNumberRieltorResult > 0)
+                                            {
+                                                announce.announcer = checkNumberRieltorResult;
+                                            }
+                                            else if (checkNumberOwnerResult > 0)
+                                            {
+                                                announce.announcer = checkNumberOwnerResult;
+                                            }
+                                            else
+                                            {
+                                                announce.announcer = 1;
+                                                //EMLAK - BAZASI
+                                                _emlakBaza.CheckAsync(id, numberList);
+                                            }
                                         }
                                     }
                                 }

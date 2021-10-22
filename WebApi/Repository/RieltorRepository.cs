@@ -15,13 +15,15 @@ namespace WebApi.Repository
         {
             this.connection = connection;
         }
-        public void Create(Rieltor rieltor)
+        public Task CreateAsync(Rieltor rieltor)
         {
-
-            string uQuery = "INSERT INTO rieltor (phone)"
+            return Task.Run(() =>
+            {
+                string uQuery = "INSERT INTO rieltor (phone)"
 
                 + "VALUES(@phone); ";
             connection.Execute(uQuery, rieltor);
+            });
         }
 
         public IEnumerable<Rieltor> GetAll()

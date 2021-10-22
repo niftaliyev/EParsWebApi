@@ -113,30 +113,11 @@ namespace WebApi.Services.TapAz
                                                     {
                                                         mobileregex = mobileregex.Replace(c, string.Empty);
                                                     }
-                                                    var numberList = mobileregex.Split(',');
 
                                                     if (mobileregex != null)
                                                         announce.mobile = mobileregex;
 
 
-                                                    var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                                    var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
-                                                    if (checkNumberRieltorResult > 0)
-                                                    {
-                                                        announce.announcer = checkNumberRieltorResult;
-                                                        announce.number_checked = true;
-
-                                                    }
-                                                    else if (checkNumberOwnerResult > 0)
-                                                    {
-                                                        announce.announcer = checkNumberOwnerResult;
-                                                        announce.number_checked = true;
-                                                    }
-                                                    else
-                                                    {
-                                                        //EMLAK - BAZASI
-                                                        _emlakBaza.CheckAsync(_httpClient, id, numberList);
-                                                    }
                                                 }
                                                 Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText);
                                                 Console.WriteLine(mobileregex);
@@ -247,6 +228,26 @@ namespace WebApi.Services.TapAz
                                                 duration = 0;
                                                 unitOfWork.Announces.Create(announce);
 
+
+                                                var numberList = mobileregex.Split(',');
+                                                var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                                var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
+                                                if (checkNumberRieltorResult > 0)
+                                                {
+                                                    announce.announcer = checkNumberRieltorResult;
+                                                    announce.number_checked = true;
+
+                                                }
+                                                else if (checkNumberOwnerResult > 0)
+                                                {
+                                                    announce.announcer = checkNumberOwnerResult;
+                                                    announce.number_checked = true;
+                                                }
+                                                else
+                                                {
+                                                    //EMLAK - BAZASI
+                                                    await _emlakBaza.CheckAsync(_httpClient, id, numberList);
+                                                }
                                             }
 
                                         }

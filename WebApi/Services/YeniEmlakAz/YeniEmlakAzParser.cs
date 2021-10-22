@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -19,16 +20,19 @@ namespace WebApi.Services.YeniEmlakAz
         private static bool isActive = false;
         private readonly UnitOfWork unitOfWork;
         private readonly HttpClientCreater clientCreater;
+        private readonly YeniEmlakAzParserImageUploader uploader;
+        public int maxRequest = 50;
         HttpResponseMessage header;
-        static string[] proxies; // лучше добавить ентер
+        static string[] proxies;
 
-        public YeniEmlakAzParser(EmlakBaza emlakBaza, UnitOfWork unitOfWork , HttpClientCreater clientCreater )
+        public YeniEmlakAzParser(EmlakBaza emlakBaza, UnitOfWork unitOfWork , HttpClientCreater clientCreater , YeniEmlakAzParserImageUploader uploader)
         {
             proxies = File.ReadAllLines("proxies.txt");
-            httpClient = clientCreater.Create(proxies[0]);
+            httpClient = clientCreater.Create(proxies[207]);
             this.emlakBaza = emlakBaza;
             this.unitOfWork = unitOfWork;
             this.clientCreater = clientCreater;
+            this.uploader = uploader;
         }
 
         public async Task YeniEmlakAzPars()
@@ -45,15 +49,19 @@ namespace WebApi.Services.YeniEmlakAz
                 {
                     int x = 0;
                     int count = 0;
+                    int duration = 0;
+
                     while (true)
                     {
-                        if (count >= 10)
+                        if (count >= 5)
                         {
-                            x++;
-                            if (x >= 350)
-                                x = 0;
+                            //x++;
+                            //if (x >= 350)
+                            //    x = 0;
 
-                            httpClient = clientCreater.Create(proxies[x]);
+                            //httpClient = clientCreater.Create(proxies[x]);
+                            Random random = new Random();
+                            httpClient = clientCreater.Create(proxies[random.Next(1 ,350)]);
                             count = 0;
                         }
 
@@ -74,14 +82,15 @@ namespace WebApi.Services.YeniEmlakAz
                                     HtmlDocument doc = new HtmlDocument();
                                     doc.LoadHtml(html);
 
-                                    announce.parser_site = model.site;
-                                    announce.announce_date = DateTime.Now;
-                                    announce.original_id = id;
+                                  
 
                                     if (doc.DocumentNode.SelectSingleNode(".//div[@class='text']") != null)
                                     {
                                         announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='text']").InnerText;
-                                    }
+                                        announce.parser_site = model.site;
+                                        announce.announce_date = DateTime.Now;
+                                        announce.original_id = id;
+                                        duration = 0;
                                     if (doc.DocumentNode.SelectSingleNode(".//div[@class='title']//price") != null)
                                     {
                                         announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//div[@class='title']//price").InnerText);
@@ -114,13 +123,14 @@ namespace WebApi.Services.YeniEmlakAz
                                             {
                                                 announce.space = Int32.Parse(item.FirstChild.InnerText);
                                             }
+                                            
                                         }
                                     }
 
+                                    StringBuilder numbers = new StringBuilder();
                                     if (doc.DocumentNode.SelectNodes(".//div[@class='tel']") != null)
                                     {
                                         int counPhoneImages = doc.DocumentNode.SelectNodes(".//div[@class='tel']//img").Count;
-                                        StringBuilder numbers = new StringBuilder();
                                         string delimiter = "";
 
                                         for (int i = 0; i < counPhoneImages; i++)
@@ -134,8 +144,48 @@ namespace WebApi.Services.YeniEmlakAz
                                         announce.mobile = numbers.ToString();
                                         Console.WriteLine(numbers.ToString());
                                         Console.WriteLine("----------------------------");
+
+                                           
+                                        }
+                                            ///////////////////IMAGE DOWNLOAD /////////////////////////
+                                        announce.cover = $@"YeniemlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
+
+                                        var filePath = $@"YeniemlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
+                                        var images = uploader.ImageDownloader(doc, id.ToString(), filePath, httpClient);
+                                        announce.logo_images = JsonSerializer.Serialize(await images);
+
+                                        unitOfWork.Announces.Create(announce);
+
+                                        var numberList = numbers.ToString().Split(',');
+                                        var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                        var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
+                                        if (checkNumberRieltorResult > 0)
+                                        {
+                                            announce.announcer = checkNumberRieltorResult;
+                                            announce.number_checked = true;
+
+                                        }
+                                        else if (checkNumberOwnerResult > 0)
+                                        {
+                                            announce.announcer = checkNumberOwnerResult;
+                                            announce.number_checked = true;
+                                        }
+                                        else
+                                        {
+                                            //EMLAK - BAZASI
+                                            await emlakBaza.CheckAsync(httpClient, id, numberList);
+                                        }
+                                    } //end if for text
+                                    else
+                                    {
+                                        duration++;
+                                        Console.WriteLine(duration);
                                     }
-                                    unitOfWork.Announces.Create(announce);
+                                    if (duration >= maxRequest)
+                                    {
+                                        Console.WriteLine("END***********");
+                                        break;
+                                    }
                                 }
                             }
                         }

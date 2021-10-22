@@ -13,24 +13,21 @@ namespace WebApi.Services
     public class EmlakBaza
     {
         private readonly UnitOfWork unitOfWork;
-        private readonly ProxysHttpClient proxysHttp;
 
-        public EmlakBaza(UnitOfWork unitOfWork, ProxysHttpClient proxysHttp)
+        public EmlakBaza(UnitOfWork unitOfWork)
         {
             this.unitOfWork = unitOfWork;
-            this.proxysHttp = proxysHttp;
         }
-        public async void CheckAsync(HttpClient httpClient,int id,params string[] numbers)
+        public async Task CheckAsync(HttpClient httpClient,int id,params string[] numbers)
         {
             try
             {
-                await Task.Run(async () =>
-                {
+   
                     for (int i = 0; i < numbers.Length; i++)
                     {
                         var values = new Dictionary<string, string>();
-
-                        values.Add("number", numbers[i]);
+                        var number = numbers[i];
+                        values.Add("number", number);
 
                         var content = new FormUrlEncodedContent(values);
 
@@ -55,27 +52,27 @@ namespace WebApi.Services
                                         if (result.Trim() == "Vasitəçidir")
                                         {
                                             Console.WriteLine(result.Trim());
-                                            unitOfWork.RieltorRepository.Create(new Rieltor { Phone = numbers[i] });
+                                            await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = number });
                                             await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 2 });
 
                                         }
                                         else if (result.Trim() == "Vasitəçi deyil")
                                         {
                                             Console.WriteLine(result.Trim());
-                                            unitOfWork.OwnerRepository.Create(new Owner { Phone = numbers[i] });
+                                            await unitOfWork.OwnerRepository.CreateAsync(new Owner { Phone = number });
                                             await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
                                         }
                                         
                                         else
                                         {
                                             Console.WriteLine(result.Trim());
+                                            Console.WriteLine("********************************************");
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                });
             }
             catch (Exception e)
             {
