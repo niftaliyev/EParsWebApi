@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using MySql.Data.MySqlClient;
+using WebApi.Models;
 
 namespace WebApi.Repository
 {
@@ -28,16 +29,17 @@ namespace WebApi.Repository
 
         public int CheckNumberForRieltor(params string[] numbers)
         {
+
             for (int i = 0; i < numbers.Length; i++)
             {
-                string uQuery = $"SELECT * FROM rieltor WHERE phone = {numbers[i]}";
-                var result = connection.Execute(uQuery);
+                string uQuery = $"SELECT COUNT(*) FROM rieltor WHERE phone = {numbers[i]}";
+                var result = connection.QueryFirst<int>(uQuery);
                 if (result > 0)
                 {
                     return 2;
                 }
             }
-
+            
             return -1;
         }
 

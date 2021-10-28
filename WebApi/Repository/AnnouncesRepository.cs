@@ -31,7 +31,7 @@ namespace WebApi.Repository
                 ",region_id,settlement_id,metro_id " +
                 ",apartment_id,mark,address,google_map," +
                 "floor_count,current_floor,space,document" +
-                ",communal,text,view_count,announcer,announce_date,original_date,repair,city_id)"
+                ",communal,text,view_count,announcer,announce_date,original_date,repair,city_id,number_checked)"
 
                 + "VALUES(@original_id,@mobile" +
                 ",@price,@cover,@parser_site" +
@@ -40,7 +40,7 @@ namespace WebApi.Repository
                 ",@region_id,@settlement_id,@metro_id" +
                 ",@apartment_id,@mark,@address,@google_map" +
                 ",@floor_count,@current_floor,@space,@document" +
-                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date,@repair,@city_id); ";
+                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date,@repair,@city_id,@number_checked); ";
                 connection.Execute(uQuery, announce);
 
         }

@@ -32,7 +32,7 @@ namespace WebApi.Services.YeniEmlakAz
                         {
                             if (isOpen)
                             {
-                                //await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri(item.Attributes["href"].Value), httpClient);
+                                await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri(item.Attributes["href"].Value), httpClient);
                                 isOpen = false;
                             }
 
@@ -42,7 +42,7 @@ namespace WebApi.Services.YeniEmlakAz
                             var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                             var fileExtension = Path.GetExtension(uriWithoutQuery);
 
-                           // await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
+                            await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
 
                             var fileEndPath = $"{filePath}{filename}{fileExtension}";
                             images.Add(fileEndPath);

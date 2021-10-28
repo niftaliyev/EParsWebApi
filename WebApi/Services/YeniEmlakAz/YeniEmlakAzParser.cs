@@ -23,12 +23,11 @@ namespace WebApi.Services.YeniEmlakAz
         private readonly YeniEmlakAzParserImageUploader uploader;
         public int maxRequest = 50;
         HttpResponseMessage header;
-        static string[] proxies;
+        static string[] proxies = SingletonProxyServersIp.Instance;
 
         public YeniEmlakAzParser(EmlakBaza emlakBaza, UnitOfWork unitOfWork , HttpClientCreater clientCreater , YeniEmlakAzParserImageUploader uploader)
         {
-            proxies = File.ReadAllLines("proxies.txt");
-            httpClient = clientCreater.Create(proxies[207]);
+            httpClient = clientCreater.Create(proxies[0]);
             this.emlakBaza = emlakBaza;
             this.unitOfWork = unitOfWork;
             this.clientCreater = clientCreater;
@@ -55,19 +54,20 @@ namespace WebApi.Services.YeniEmlakAz
                     {
                         if (count >= 5)
                         {
-                            //x++;
-                            //if (x >= 350)
-                            //    x = 0;
+                            x++;
+                            if (x >= 350)
+                                x = 0;
 
-                            //httpClient = clientCreater.Create(proxies[x]);
-                            Random random = new Random();
-                            httpClient = clientCreater.Create(proxies[random.Next(1 ,350)]);
-                            count = 0;
+                            httpClient = clientCreater.Create(proxies[x]);
+                            //Random random = new Random();
+                            //httpClient = clientCreater.Create(proxies[random.Next(1 ,350)]);
+                            //count = 0;
                         }
 
                         Announce announce = new Announce();
                         try
                         {
+                            Console.WriteLine(model.site);
 
                             header = await httpClient.GetAsync($"{model.site}/elan/{++id}");
                             string url = header.RequestMessage.RequestUri.AbsoluteUri;
@@ -82,9 +82,9 @@ namespace WebApi.Services.YeniEmlakAz
                                     HtmlDocument doc = new HtmlDocument();
                                     doc.LoadHtml(html);
 
-                                  
+                                   
 
-                                    if (doc.DocumentNode.SelectSingleNode(".//div[@class='text']") != null)
+                                    if (doc.DocumentNode.SelectSingleNode(".//div[@class='text']") != null && doc.DocumentNode.SelectSingleNode(".//table[@class='msg']//h3") == null)
                                     {
                                         announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='text']").InnerText;
                                         announce.parser_site = model.site;
@@ -154,26 +154,25 @@ namespace WebApi.Services.YeniEmlakAz
                                         var images = uploader.ImageDownloader(doc, id.ToString(), filePath, httpClient);
                                         announce.logo_images = JsonSerializer.Serialize(await images);
 
-                                        unitOfWork.Announces.Create(announce);
-
+                                        bool checkedNumber = false;
                                         var numberList = numbers.ToString().Split(',');
                                         var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                        var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
                                         if (checkNumberRieltorResult > 0)
                                         {
+                                            Console.WriteLine("FIND IN RIELTOR BASE YENIEMLAK");
                                             announce.announcer = checkNumberRieltorResult;
                                             announce.number_checked = true;
+                                            checkedNumber = true;
+                                            Console.WriteLine("Checked YENIEMLAK");
+                                        }
+                                        unitOfWork.Announces.Create(announce);
 
-                                        }
-                                        else if (checkNumberOwnerResult > 0)
+                                        if (checkedNumber == false)
                                         {
-                                            announce.announcer = checkNumberOwnerResult;
-                                            announce.number_checked = true;
-                                        }
-                                        else
-                                        {
+                                            Console.WriteLine("Find in emlak-baza YENIEMLAK");
                                             //EMLAK - BAZASI
                                             await emlakBaza.CheckAsync(httpClient, id, numberList);
+                                            Console.WriteLine("emlakbazaemlakbazaemlakbaza");
                                         }
                                     } //end if for text
                                     else
@@ -183,6 +182,8 @@ namespace WebApi.Services.YeniEmlakAz
                                     }
                                     if (duration >= maxRequest)
                                     {
+                                        announce.announcer = 1;
+
                                         Console.WriteLine("END***********");
                                         break;
                                     }

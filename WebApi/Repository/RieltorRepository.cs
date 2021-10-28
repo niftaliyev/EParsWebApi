@@ -21,7 +21,7 @@ namespace WebApi.Repository
             {
                 string uQuery = "INSERT INTO rieltor (phone)"
 
-                + "VALUES(@phone); ";
+                + "VALUES(@Phone); ";
             connection.Execute(uQuery, rieltor);
             });
         }

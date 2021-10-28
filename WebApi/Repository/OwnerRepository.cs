@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApi.Models;
+using WebApi.ViewModels;
 
 namespace WebApi.Repository
 {
@@ -15,15 +16,15 @@ namespace WebApi.Repository
         {
             this.connection = connection;
         }
-        public  Task CreateAsync(Owner owner)
+        public void CreateAsync(OwnerViewModel owner)
         {
-            return Task.Run(() =>
-            {
+           
                 string uQuery = "INSERT INTO owner (phone)"
 
-                + "VALUES(@phone); ";
-            connection.Execute(uQuery, owner);
-            });
+                + "VALUES(@Phone); ";
+            connection.Execute(uQuery,owner);
+            
+
         }
         public IEnumerable<Rieltor> GetAll()
         {

@@ -22,8 +22,9 @@ namespace WebApi.Services
         {
             try
             {
-   
-                    for (int i = 0; i < numbers.Length; i++)
+                bool turn = false;
+
+                for (int i = 0; i < numbers.Length; i++)
                     {
                         var values = new Dictionary<string, string>();
                         var number = numbers[i];
@@ -45,25 +46,40 @@ namespace WebApi.Services
                                 if (counts != null && counts[1] != null)
                                 {
                                     string result = counts[1].InnerText.Trim();
-                                    Console.WriteLine(result);
                                     
                                     if (result != null)
                                     {
-                                        if (result.Trim() == "Vasitəçidir")
+                                    if (result.Trim() == "Vasitəçidir")
+                                    {
+                                        Console.WriteLine(result.Trim());
+                                        Console.WriteLine(numbers[0]);
+                                        for (int j = 0; j < numbers.Length; j++)
                                         {
+                                            await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = numbers[j] });
+                                        }
+
+                                        await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 2 });
+                                        turn = true;
+                                        break;
+
+                                    }
+                                    else if (result.Trim() == "Vasitəçi deyil")
+                                    {
+                                        
                                             Console.WriteLine(result.Trim());
-                                            await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = number });
-                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 2 });
+                                            Console.WriteLine("-------------------****************------------------------------");
+                                        if (i == (numbers.Length - 1))
+                                        {
+                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
 
                                         }
-                                        else if (result.Trim() == "Vasitəçi deyil")
-                                        {
-                                            Console.WriteLine(result.Trim());
-                                            await unitOfWork.OwnerRepository.CreateAsync(new Owner { Phone = number });
-                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
-                                        }
-                                        
-                                        else
+                                        // unitOfWork.OwnerRepository.CreateAsync(new OwnerViewModel { Phone = number});
+
+
+                                    }
+                                    
+
+                                    else
                                         {
                                             Console.WriteLine(result.Trim());
                                             Console.WriteLine("********************************************");

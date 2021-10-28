@@ -20,7 +20,7 @@ namespace WebApi.Services.TapAz
             metrosNames.Add("Koroğlu m.", "Koroğlu");
             metrosNames.Add("Ulduz m.", "Ulduz");
             metrosNames.Add("Bakmil m.", "Bakmil");
-            metrosNames.Add("Nəriman Nərimanov m.", "Nəriman Nərimanov");
+            metrosNames.Add("Nərimanov m.", "Nəriman Nərimanov");
             metrosNames.Add("Gənclik m.", "Gənclik");
             metrosNames.Add("28 may m.", "28 May");
             metrosNames.Add("Şah İsmayıl Xətai m.", "Şah İsmail Xətai");

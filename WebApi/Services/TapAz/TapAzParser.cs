@@ -22,12 +22,12 @@ namespace WebApi.Services.TapAz
         private HttpClient _httpClient;
         HttpResponseMessage header;
         public int maxRequest = 200;
-        static string[] proxies; // лучше добавить ентер
+        static string[] proxies = SingletonProxyServersIp.Instance;
+
         public TapAzParser(EmlakBaza emlakBaza, 
             TapAzImageUploader uploader, 
             HttpClientCreater clientCreater, 
             UnitOfWork unitOfWork,
-            HttpClient httpClient, 
             ITypeOfPropertyTapAz typeOfPropertyTapAz,
             TapAzMetrosNames metrosNames)
         {
@@ -37,9 +37,7 @@ namespace WebApi.Services.TapAz
             this.unitOfWork = unitOfWork;
             this.typeOfPropertyTapAz = typeOfPropertyTapAz;
             this.metrosNames = metrosNames;
-            proxies = File.ReadAllLines("proxies.txt");
              _httpClient = clientCreater.Create(proxies[0]);
-            //_httpClient = httpClient;
             Console.WriteLine(proxies[0]);
         }
         public async Task TapAzPars()
@@ -73,6 +71,8 @@ namespace WebApi.Services.TapAz
 
                             try
                             {
+                                Console.WriteLine(model.site);
+
                                 Uri myUri = new Uri($"{model.site}/elanlar/-/-/{++id}", UriKind.Absolute);
                                 header = await _httpClient.GetAsync(myUri);
                                 var url = header.RequestMessage.RequestUri.AbsoluteUri;
@@ -226,25 +226,27 @@ namespace WebApi.Services.TapAz
                                                 var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
                                                 announce.logo_images = JsonSerializer.Serialize(await images);
                                                 duration = 0;
-                                                unitOfWork.Announces.Create(announce);
 
-
+                                                bool checkedNumber = false;
                                                 var numberList = mobileregex.Split(',');
                                                 var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                                var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
                                                 if (checkNumberRieltorResult > 0)
                                                 {
+                                                    Console.WriteLine("FIND IN RIELTOR bASE TAP.AZ");
+
                                                     announce.announcer = checkNumberRieltorResult;
                                                     announce.number_checked = true;
+                                                    checkedNumber = true;
+                                                    Console.WriteLine("Checked");
 
                                                 }
-                                                else if (checkNumberOwnerResult > 0)
+
+                                                unitOfWork.Announces.Create(announce);
+
+                                                if (checkedNumber == false)
                                                 {
-                                                    announce.announcer = checkNumberOwnerResult;
-                                                    announce.number_checked = true;
-                                                }
-                                                else
-                                                {
+                                                    Console.WriteLine("Find in emlak-baza tAP.aZ");
+
                                                     //EMLAK - BAZASI
                                                     await _emlakBaza.CheckAsync(_httpClient, id, numberList);
                                                 }

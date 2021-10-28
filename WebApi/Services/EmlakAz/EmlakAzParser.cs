@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -65,7 +66,7 @@ namespace WebApi.Services.EmlakAz
                         Announce announce = new Announce();
                         try
                         {
-
+                            Console.WriteLine(model.site);
                             header = await httpClient.GetAsync($"{model.site}/{++id}-.html");
                             string url = header.RequestMessage.RequestUri.AbsoluteUri;
                             if (!url.EndsWith("/site"))
@@ -271,26 +272,29 @@ namespace WebApi.Services.EmlakAz
 
                                             announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
                                             announce.announce_date = DateTime.Now;
-                                            unitOfWork.Announces.Create(announce);
                                             counter = 0;
 
+                                            bool checkedNumber = false;
                                             var numberList = mobileregex.Split(',');
                                             var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                            var checkNumberOwnerResult = unitOfWork.CheckNumberRepository.CheckNumberForOwner(numberList);
+                                            
                                             if (checkNumberRieltorResult > 0)
                                             {
+                                                Console.WriteLine("FIND NUMBER IN RIELTORS TABLE**************");
+                                                announce.number_checked = true;
                                                 announce.announcer = checkNumberRieltorResult;
+                                                checkedNumber = true;
                                             }
-                                            else if (checkNumberOwnerResult > 0)
+                                            unitOfWork.Announces.Create(announce);
+
+                                            if(checkedNumber == false)
                                             {
-                                                announce.announcer = checkNumberOwnerResult;
-                                            }
-                                            else
-                                            {
-                                                announce.announcer = 1;
+                                                Console.WriteLine("Search number in emlakbazasi *************");
                                                 //EMLAK - BAZASI
-                                                _emlakBaza.CheckAsync(id, numberList);
+                                               _emlakBaza.CheckAsync(id, numberList);
                                             }
+
+
                                         }
                                     }
                                 }
@@ -319,6 +323,7 @@ namespace WebApi.Services.EmlakAz
                         {
                             Console.WriteLine(e.Message);
                         }
+                        Thread.Sleep(1000);
                     } // while end
                 }      // if isactive      
 

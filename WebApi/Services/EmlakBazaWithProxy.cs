@@ -16,13 +16,13 @@ namespace WebApi.Services
         private readonly UnitOfWork unitOfWork;
         private readonly HttpClientCreater clientCreater;
         HttpClient httpClient;
-        static string[] proxies; 
+        static string[] proxies = SingletonProxyServersIp.Instance;
 
         public EmlakBazaWithProxy(UnitOfWork unitOfWork, HttpClientCreater clientCreater)
         {
             this.unitOfWork = unitOfWork;
             this.clientCreater = clientCreater;
-            proxies = File.ReadAllLines("proxies.txt");
+            //proxies = File.ReadAllLines("proxies.txt");
 
         }
         public async void CheckAsync(int id, params string[] numbers)
@@ -33,7 +33,7 @@ namespace WebApi.Services
                 {
                     Random rnd = new Random();
                     httpClient = clientCreater.Create(proxies[rnd.Next(0, 350)]);
-
+                    bool turn = false;
                     for (int i = 0; i < numbers.Length; i++)
                     {
                         httpClient = clientCreater.Create(proxies[rnd.Next(0,350)]);
@@ -65,16 +65,27 @@ namespace WebApi.Services
                                         if (result.Trim() == "Vasitəçidir")
                                         {
                                             Console.WriteLine(result.Trim());
-                                            await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = numbers[i] });
+                                            for (int j = 0; j < numbers.Length; j++)
+                                            {
+                                                await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = numbers[j] });
+                                            }
+
                                             await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 2 });
+                                            turn = true;
+                                            break;
 
                                         }
                                         else if (result.Trim() == "Vasitəçi deyil")
                                         {
+
                                             Console.WriteLine(result.Trim());
-                                            await unitOfWork .OwnerRepository.CreateAsync(new Owner { Phone = numbers[i] });
-                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
+                                            Console.WriteLine("-------------------------------------------------");
+
+                                            unitOfWork.OwnerRepository.CreateAsync(new OwnerViewModel { Phone = numbers[i] });
+
+
                                         }
+
 
                                         else
                                         {
