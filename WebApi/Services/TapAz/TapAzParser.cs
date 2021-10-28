@@ -19,6 +19,7 @@ namespace WebApi.Services.TapAz
         private readonly UnitOfWork unitOfWork;
         private readonly ITypeOfPropertyTapAz typeOfPropertyTapAz;
         private readonly TapAzMetrosNames metrosNames;
+        private readonly TapAzRegions regions;
         private HttpClient _httpClient;
         HttpResponseMessage header;
         public int maxRequest = 200;
@@ -29,7 +30,8 @@ namespace WebApi.Services.TapAz
             HttpClientCreater clientCreater, 
             UnitOfWork unitOfWork,
             ITypeOfPropertyTapAz typeOfPropertyTapAz,
-            TapAzMetrosNames metrosNames)
+            TapAzMetrosNames metrosNames,
+            TapAzRegions regions)
         {
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
@@ -37,7 +39,8 @@ namespace WebApi.Services.TapAz
             this.unitOfWork = unitOfWork;
             this.typeOfPropertyTapAz = typeOfPropertyTapAz;
             this.metrosNames = metrosNames;
-             _httpClient = clientCreater.Create(proxies[0]);
+            this.regions = regions;
+            _httpClient = clientCreater.Create(proxies[0]);
             Console.WriteLine(proxies[0]);
         }
         public async Task TapAzPars()
@@ -190,12 +193,29 @@ namespace WebApi.Services.TapAz
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" ş."))
                                                         {
-                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            var cities = unitOfWork.CitiesRepository.GetAll();
+                                                            foreach (var item in cities)
+                                                            {
+                                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == item.name)
+                                                                {
+                                                                    announce.city_id = item.id;
+                                                                    break;
+                                                                }
+                                                            }
                                                             Console.WriteLine("Seher******************");
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" r."))
                                                         {
-                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            var regionsNames = regions.GetRegionsNamesAll();
+
+                                                            foreach (var item in regionsNames)
+                                                            {
+                                                                if (item.Key == doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText)
+                                                                {
+                                                                    announce.region_id = item.Value;
+                                                                    break;
+                                                                }
+                                                            }
                                                             Console.WriteLine("Rayon******************");
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" pr."))

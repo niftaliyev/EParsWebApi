@@ -46,6 +46,7 @@ namespace WebApi
             services.AddTransient<FileUploadHelper>();
             services.AddTransient<HttpClientCreater>();
             services.AddTransient<TapAzMetrosNames>();
+            services.AddTransient<TapAzRegions>();
             services.AddTransient<EmlakAzMetrosNames>();
             services.AddTransient<EmlakAzMarksNames>();
             services.AddTransient<EmlakAzRegionsNames>();

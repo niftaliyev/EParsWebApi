@@ -25,12 +25,11 @@ namespace WebApi.Services
             //proxies = File.ReadAllLines("proxies.txt");
 
         }
-        public async void CheckAsync(int id, params string[] numbers)
+        public async Task CheckAsync(int id, params string[] numbers)
         {
             try
             {
-                await Task.Run(async () =>
-                {
+      
                     Random rnd = new Random();
                     httpClient = clientCreater.Create(proxies[rnd.Next(0, 350)]);
                     bool turn = false;
@@ -81,8 +80,11 @@ namespace WebApi.Services
                                             Console.WriteLine(result.Trim());
                                             Console.WriteLine("-------------------------------------------------");
 
-                                            unitOfWork.OwnerRepository.CreateAsync(new OwnerViewModel { Phone = numbers[i] });
-
+                                            if (i == (numbers.Length - 1))
+                                            {
+                                                await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
+                                   
+                                            }
 
                                         }
 
@@ -96,7 +98,6 @@ namespace WebApi.Services
                             }
                         }
                     }
-                });
             }
             catch (Exception e)
             {
