@@ -22,7 +22,7 @@ namespace WebApi.Repository
             var query = "select * from announces";
             return connection.Query<Announce>(query);
         }
-        public void Create(Announce announce)
+        public async Task<int> Create(Announce announce)
         {
             string uQuery = "INSERT INTO announces (original_id, mobile" +
                 ",price,cover,parser_site" +
@@ -40,9 +40,9 @@ namespace WebApi.Repository
                 ",@region_id,@settlement_id,@metro_id" +
                 ",@apartment_id,@mark,@address,@google_map" +
                 ",@floor_count,@current_floor,@space,@document" +
-                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date,@repair,@city_id,@number_checked); ";
-                connection.Execute(uQuery, announce);
-
+                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date,@repair,@city_id,@number_checked); SELECT last_insert_id();";
+                var lastId = await connection.ExecuteScalarAsync<long>(uQuery, announce);
+                return ((int)lastId);
         }
         public Announce GetById(int id)
         {

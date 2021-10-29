@@ -19,7 +19,9 @@ namespace WebApi.Services.TapAz
         private readonly UnitOfWork unitOfWork;
         private readonly ITypeOfPropertyTapAz typeOfPropertyTapAz;
         private readonly TapAzMetrosNames metrosNames;
-        private readonly TapAzRegions regions;
+        private readonly TapAzSettlementsNames settlementsNames;
+        private readonly TapAzRegionsNames regions;
+
         private HttpClient _httpClient;
         HttpResponseMessage header;
         public int maxRequest = 200;
@@ -31,7 +33,8 @@ namespace WebApi.Services.TapAz
             UnitOfWork unitOfWork,
             ITypeOfPropertyTapAz typeOfPropertyTapAz,
             TapAzMetrosNames metrosNames,
-            TapAzRegions regions)
+            TapAzSettlementsNames settlementsNames,
+            TapAzRegionsNames regions)
         {
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
@@ -39,6 +42,7 @@ namespace WebApi.Services.TapAz
             this.unitOfWork = unitOfWork;
             this.typeOfPropertyTapAz = typeOfPropertyTapAz;
             this.metrosNames = metrosNames;
+            this.settlementsNames = settlementsNames;
             this.regions = regions;
             _httpClient = clientCreater.Create(proxies[0]);
             Console.WriteLine(proxies[0]);
@@ -188,17 +192,31 @@ namespace WebApi.Services.TapAz
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" qəs."))
                                                         {
-                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            var settlements = settlementsNames.GetSettlementsNamesAll();
+                                                            foreach (var item in settlements)
+                                                            {
+                                                                if (item.Key == doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText)
+                                                                {
+                                                                    announce.settlement_id = item.Value;
+                                                                    break;
+                                                                }
+                                                            }
                                                             Console.WriteLine("qesebe******************");
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" ş."))
                                                         {
                                                             var cities = unitOfWork.CitiesRepository.GetAll();
+                                                            
                                                             foreach (var item in cities)
                                                             {
                                                                 if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == item.name)
                                                                 {
                                                                     announce.city_id = item.id;
+                                                                    break;
+                                                                }
+                                                                if ("Xırdalan ş." == doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText)
+                                                                {
+                                                                    announce.city_id = 26;
                                                                     break;
                                                                 }
                                                             }
@@ -220,7 +238,8 @@ namespace WebApi.Services.TapAz
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" pr."))
                                                         {
-                                                            Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            //Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                            announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
                                                             Console.WriteLine("Prospekt******************");
                                                         }
                                                     }

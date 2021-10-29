@@ -5,16 +5,18 @@ using System.Threading.Tasks;
 
 namespace WebApi.Services.TapAz
 {
-    public class TapAzRegions
+    public class TapAzRegionsNames
     {
         Dictionary<string, int> regionNames = new Dictionary<string, int>();
 
 
-        public TapAzRegions()
+        public TapAzRegionsNames()
         {
             regionNames.Add("Abşeron r.",1);
             regionNames.Add("Xətai ray.", 3);
+            regionNames.Add("Xətai r.", 3);
             regionNames.Add("Nərimanov r.",6);
+            regionNames.Add("Nərimanov rayonu", 6);
             regionNames.Add("Səbail r.",11);
             regionNames.Add("Xəzər ray.", 4);
             regionNames.Add("Nəsimi r.",7);

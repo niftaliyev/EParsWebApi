@@ -250,25 +250,7 @@ namespace WebApi.Services.EmlakAz
                                                 if (jsonImages != null)
                                                     announce.logo_images = jsonImages;
                                             }
-                                            if (doc.GetElementbyId("google_map").GetAttributeValue("value","") != null)
-                                            {
-                                                var charsToRemoveMapCordinats = new string[] { "(", ")"," "};
-                                                var mapCordinats = doc.GetElementbyId("google_map").GetAttributeValue("value", "");
-                                                foreach (var c in charsToRemoveMapCordinats)
-                                                {
-                                                    mapCordinats = mapCordinats.Replace(c, string.Empty);
-                                                }
-
-                                                announce.google_map = mapCordinats;
-
-                                                var marks = unitOfWork.MarkRepository.GetMarks(mapCordinats);
-                                                foreach (var item in marks)
-                                                {
-                                                  var announceMark = new AnnounceMark { announce_id =  id, mark_id = item.id};
-                                                    unitOfWork.MarkRepository.Create(announceMark);
-                                                }   
-                                                
-                                            }
+                                          
 
                                             announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
                                             announce.announce_date = DateTime.Now;
@@ -285,16 +267,34 @@ namespace WebApi.Services.EmlakAz
                                                 announce.announcer = checkNumberRieltorResult;
                                                 checkedNumber = true;
                                             }
-                                            unitOfWork.Announces.Create(announce);
-
+                                            var lastAnnounceId = unitOfWork.Announces.Create(announce);
+                                            Console.WriteLine(lastAnnounceId);
                                             if(checkedNumber == false)
                                             {
                                                 Console.WriteLine("Search number in emlakbazasi *************");
                                                 //EMLAK - BAZASI
-                                               _emlakBaza.CheckAsync(id, numberList);
+                                              await _emlakBaza.CheckAsync(id, numberList);
                                             }
 
+                                            if (doc.GetElementbyId("google_map").GetAttributeValue("value", "") != null)
+                                            {
+                                                var charsToRemoveMapCordinats = new string[] { "(", ")", " " };
+                                                var mapCordinats = doc.GetElementbyId("google_map").GetAttributeValue("value", "");
+                                                foreach (var c in charsToRemoveMapCordinats)
+                                                {
+                                                    mapCordinats = mapCordinats.Replace(c, string.Empty);
+                                                }
 
+                                                announce.google_map = mapCordinats;
+
+                                                var marks = unitOfWork.MarkRepository.GetMarks(mapCordinats);
+                                                foreach (var item in marks)
+                                                {
+                                                    var announceMark = new AnnounceMark { announce_id = await lastAnnounceId, mark_id = item.id };
+                                                    unitOfWork.MarkRepository.Create(announceMark);
+                                                }
+
+                                            }
                                         }
                                     }
                                 }
