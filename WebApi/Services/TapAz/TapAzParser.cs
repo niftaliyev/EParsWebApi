@@ -280,7 +280,7 @@ namespace WebApi.Services.TapAz
 
                                                 }
 
-                                                unitOfWork.Announces.Create(announce);
+                                                await unitOfWork.Announces.Create(announce);
 
                                                 if (checkedNumber == false)
                                                 {

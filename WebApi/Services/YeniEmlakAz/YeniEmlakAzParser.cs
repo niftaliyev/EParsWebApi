@@ -21,17 +21,23 @@ namespace WebApi.Services.YeniEmlakAz
         private readonly UnitOfWork unitOfWork;
         private readonly HttpClientCreater clientCreater;
         private readonly YeniEmlakAzParserImageUploader uploader;
+        private readonly YeniEmlakAzRegionsNames regionsNames;
         public int maxRequest = 50;
         HttpResponseMessage header;
         static string[] proxies = SingletonProxyServersIp.Instance;
 
-        public YeniEmlakAzParser(EmlakBaza emlakBaza, UnitOfWork unitOfWork , HttpClientCreater clientCreater , YeniEmlakAzParserImageUploader uploader)
+        public YeniEmlakAzParser(EmlakBaza emlakBaza, 
+            UnitOfWork unitOfWork , 
+            HttpClientCreater clientCreater , 
+            YeniEmlakAzParserImageUploader uploader,
+            YeniEmlakAzRegionsNames regionsNames)
         {
             httpClient = clientCreater.Create(proxies[0]);
             this.emlakBaza = emlakBaza;
             this.unitOfWork = unitOfWork;
             this.clientCreater = clientCreater;
             this.uploader = uploader;
+            this.regionsNames = regionsNames;
         }
 
         public async Task YeniEmlakAzPars()
@@ -52,7 +58,7 @@ namespace WebApi.Services.YeniEmlakAz
 
                     while (true)
                     {
-                        if (count >= 5)
+                        if (count >= 10)
                         {
                             x++;
                             if (x >= 350)
@@ -111,6 +117,36 @@ namespace WebApi.Services.YeniEmlakAz
                                             }
                                         }
                                     }
+
+                                        if (doc.DocumentNode.SelectNodes(".//div[@class='params']") != null)
+                                        {
+                                            foreach (var item in doc.DocumentNode.SelectNodes(".//div[@class='params']//b"))
+                                            {
+                                                if (item.InnerText.Contains("rayon"))
+                                                {
+                                                    var regions = regionsNames.GetRegionsNamesAll();
+                                                    foreach (var region in regions)
+                                                    {
+                                                        if (region.Key == item.InnerText)
+                                                        {
+                                                            announce.region_id = region.Value;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                //Console.WriteLine($"item     {item.InnerHtml}");
+                                                if (item.InnerText.Contains("qəs."))
+                                                {
+
+                                                }
+                                                if (item.InnerText.Contains(" ş."))
+                                                {
+
+                                                }
+                                            }
+                                        }
+
+
                                     if (doc.DocumentNode.SelectNodes(".//div[@class='params']") != null)
                                     {
                                         foreach (var item in doc.DocumentNode.SelectNodes(".//div[@class='params']"))
@@ -182,8 +218,6 @@ namespace WebApi.Services.YeniEmlakAz
                                     }
                                     if (duration >= maxRequest)
                                     {
-                                        announce.announcer = 1;
-
                                         Console.WriteLine("END***********");
                                         break;
                                     }

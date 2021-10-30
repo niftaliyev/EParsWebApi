@@ -16,6 +16,7 @@ using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakAz.Interfaces;
 using WebApi.Services.TapAz;
 using WebApi.Services.TapAz.Interfaces;
+using WebApi.Services.YeniEmlakAz;
 
 namespace WebApi
 {
@@ -52,6 +53,7 @@ namespace WebApi
             services.AddTransient<EmlakAzMarksNames>();
             services.AddTransient<EmlakAzRegionsNames>();
             services.AddTransient<EmlakAzSettlementNames>();
+            services.AddTransient<YeniEmlakAzRegionsNames>();
 
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
