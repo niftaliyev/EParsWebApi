@@ -115,27 +115,16 @@ namespace WebApi.Services.EmlakAz
                                             //////////////// METRO ID AND RENT TYPE ///////////////
                                             if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']") != null)
                                             {
-                                                announce.rent_type = typeOfProperty.GetTitleOfProperty(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
-                                                //Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
+                                                announce.announce_type = typeOfProperty.GetTitleOfProperty(doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText);
 
                                                 if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.EndsWith(" m."))
                                                 {
                                                     var dictionaryMetrosNames = metrosNames.GetMetroNameAll();
-                                                    var originalMetrosNames = unitOfWork.MetrosRepository.GetAll();
-                                                    foreach (var dictionaryMetroName in dictionaryMetrosNames)
+                                                    foreach (var titleMetroName in dictionaryMetrosNames)
                                                     {
-                                                        if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Contains(dictionaryMetroName.Key))
+                                                        if (doc.DocumentNode.SelectSingleNode(".//h1[@class='title']").InnerText.Contains(titleMetroName.Key))
                                                         {
-                                                            foreach (var originalMetroName in originalMetrosNames)
-                                                            {
-                                                                if (dictionaryMetroName.Value == originalMetroName.name)
-                                                                {
-                                                                    announce.metro_id = originalMetroName.id;
-                                                                    announce.region_id = originalMetroName.region_id;
-                                                                    announce.settlement_id = originalMetroName.settlement_id;
-                                                                    break;
-                                                                }
-                                                            }
+                                                            announce.metro_id = titleMetroName.Value;
                                                             break;
                                                         }
                                                     }
@@ -189,7 +178,11 @@ namespace WebApi.Services.EmlakAz
                                                     if (item.InnerText.StartsWith("Əmlakın növü"))
                                                         announce.property_type = typeOfProperty.GetTypeOfProperty(item.InnerText);
                                                     if (item.InnerText.StartsWith("Sahə"))
-                                                        announce.space = Int32.Parse(regex.Match(item.InnerText).ToString());
+                                                    {
+                                                        var space = regex.Match(item.InnerText).ToString();
+                                                        announce.space = Int32.Parse(space);
+
+                                                    }
                                                     if (item.InnerText.StartsWith("Otaqların sayı"))
                                                         announce.floor_count = Int32.Parse(item.LastChild.InnerText);
                                                     if (item.InnerText.StartsWith("Otaqların sayı"))
@@ -209,7 +202,7 @@ namespace WebApi.Services.EmlakAz
                                                 }
                                             }
 
-
+                              
 
 
 
@@ -221,7 +214,6 @@ namespace WebApi.Services.EmlakAz
                                                     announce.announcer = 2;
                                             }
 
-                                            //Console.WriteLine(turn);
 
                                             if (doc.DocumentNode.SelectSingleNode(".//span[@class='m']") != null)
                                                 announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='m']").InnerText.Replace(" ", string.Empty));
@@ -243,6 +235,13 @@ namespace WebApi.Services.EmlakAz
                                             /////////////////////////// ImageUploader //////////////////////////////
                                             var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                             var images = await _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
+
+                                            var uri = new Uri(doc.DocumentNode.SelectNodes(".//img")[0].Attributes["src"].Value);
+
+                                            var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                                            var fileExtension = Path.GetExtension(uriWithoutQuery);
+                                            announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
+
                                             if (images != null)
                                             {
 
@@ -252,7 +251,6 @@ namespace WebApi.Services.EmlakAz
                                             }
                                           
 
-                                            announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
                                             announce.announce_date = DateTime.Now;
                                             counter = 0;
 
@@ -267,14 +265,23 @@ namespace WebApi.Services.EmlakAz
                                                 announce.announcer = checkNumberRieltorResult;
                                                 checkedNumber = true;
                                             }
+
+                                            if (doc.DocumentNode.SelectSingleNode(".//div[@class='map-address']//h4") != null)
+                                            {
+                                                announce.address = doc.DocumentNode.SelectSingleNode(".//div[@class='map-address']//h4").InnerText.Split("Ünvan: ")[1];
+                                            }
+
+
                                             var lastAnnounceId = unitOfWork.Announces.Create(announce);
-                                            Console.WriteLine(lastAnnounceId);
+
                                             if(checkedNumber == false)
                                             {
                                                 Console.WriteLine("Search number in emlakbazasi *************");
                                                 //EMLAK - BAZASI
                                               await _emlakBaza.CheckAsync(id, numberList);
                                             }
+
+                             
 
                                             if (doc.GetElementbyId("google_map").GetAttributeValue("value", "") != null)
                                             {

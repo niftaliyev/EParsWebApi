@@ -19,6 +19,7 @@ namespace WebApi.Services.TapAz
             regionNames.Add("Nərimanov rayonu", 6);
             regionNames.Add("Səbail r.",11);
             regionNames.Add("Xəzər ray.", 4);
+            regionNames.Add("Xəzər r.", 4);
             regionNames.Add("Nəsimi r.",7);
             regionNames.Add("Suraxanı r.",12);
             regionNames.Add("Binəqədi r.",2);

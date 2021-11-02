@@ -21,6 +21,9 @@ namespace WebApi.Services.YeniEmlakAz
         private readonly UnitOfWork unitOfWork;
         private readonly HttpClientCreater clientCreater;
         private readonly YeniEmlakAzParserImageUploader uploader;
+        private readonly YeniEmlakAzMetrosNames metrosNames;
+        private readonly YeniEmlakAzSettlementNames settlementNames;
+        private readonly YeniEmlakAzCountryNames countryNames;
         private readonly YeniEmlakAzRegionsNames regionsNames;
         public int maxRequest = 50;
         HttpResponseMessage header;
@@ -30,6 +33,9 @@ namespace WebApi.Services.YeniEmlakAz
             UnitOfWork unitOfWork , 
             HttpClientCreater clientCreater , 
             YeniEmlakAzParserImageUploader uploader,
+            YeniEmlakAzMetrosNames metrosNames,
+            YeniEmlakAzSettlementNames settlementNames,
+            YeniEmlakAzCountryNames countryNames,
             YeniEmlakAzRegionsNames regionsNames)
         {
             httpClient = clientCreater.Create(proxies[0]);
@@ -37,6 +43,9 @@ namespace WebApi.Services.YeniEmlakAz
             this.unitOfWork = unitOfWork;
             this.clientCreater = clientCreater;
             this.uploader = uploader;
+            this.metrosNames = metrosNames;
+            this.settlementNames = settlementNames;
+            this.countryNames = countryNames;
             this.regionsNames = regionsNames;
         }
 
@@ -88,7 +97,7 @@ namespace WebApi.Services.YeniEmlakAz
                                     HtmlDocument doc = new HtmlDocument();
                                     doc.LoadHtml(html);
 
-                                   
+                                    
 
                                     if (doc.DocumentNode.SelectSingleNode(".//div[@class='text']") != null && doc.DocumentNode.SelectSingleNode(".//table[@class='msg']//h3") == null)
                                     {
@@ -117,11 +126,60 @@ namespace WebApi.Services.YeniEmlakAz
                                             }
                                         }
                                     }
-
+                                        if (doc.DocumentNode.SelectSingleNode(".//div[@class='title']//tip") != null)
+                                        {
+                                            if (doc.DocumentNode.SelectSingleNode(".//div[@class='title']//tip").InnerText == "Günlük")
+                                            {
+                                                announce.announce_type = 3;
+                                            }
+                                            else if (doc.DocumentNode.SelectSingleNode(".//div[@class='title']//tip").InnerText == "Kirayə")
+                                            {
+                                                announce.announce_type = 1;
+                                            }
+                                            else if (doc.DocumentNode.SelectSingleNode(".//div[@class='title']//tip").InnerText == "Satılır")
+                                            {
+                                                announce.announce_type = 2;
+                                            }
+                                        }
+                                    /////////// METRO
                                         if (doc.DocumentNode.SelectNodes(".//div[@class='params']") != null)
                                         {
+                                            foreach (var item in doc.DocumentNode.SelectNodes(".//div[@class='params']"))
+                                            {
+                                                if (item.FirstChild.InnerText == "metro. ")
+                                                {
+                                                    var metroNames = metrosNames.GetMerosNamesAll();
+                                                    foreach (var metroName in metroNames)
+                                                    {
+                                                        if (metroName.Key == item.LastChild.InnerText)
+                                                        {
+                                                            announce.metro_id = metroName.Value;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                    break;
+                                            }
+                                            bool countryCheck = true;
                                             foreach (var item in doc.DocumentNode.SelectNodes(".//div[@class='params']//b"))
                                             {
+                                                if (countryCheck == true)
+                                                {
+                                                    var namesCountry = countryNames.GetCountryNames();
+                                                    foreach (var countryName in namesCountry)
+                                                    {
+                                                        if (item.InnerText == countryName.Key)
+                                                        {
+                                                            announce.city_id = countryName.Value;
+                                                            announce.address = countryName.Key;
+                                                            countryCheck = false;
+                                                            Console.WriteLine(item.InnerText);
+                                                            Console.WriteLine(countryName.Key);
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                ////////// REGION
                                                 if (item.InnerText.Contains("rayon"))
                                                 {
                                                     var regions = regionsNames.GetRegionsNamesAll();
@@ -134,14 +192,21 @@ namespace WebApi.Services.YeniEmlakAz
                                                         }
                                                     }
                                                 }
-                                                //Console.WriteLine($"item     {item.InnerHtml}");
-                                                if (item.InnerText.Contains("qəs."))
+                                                if (item.InnerText.Contains("qəs.") || item.InnerText.Contains("mikrorayon"))
                                                 {
-
+                                                    var settlements = settlementNames.GetSettlementNamesAll();
+                                                    foreach (var settlemenName in settlements)
+                                                    {
+                                                        if (settlemenName.Key == item.InnerText)
+                                                        {
+                                                            announce.settlement_id = settlemenName.Value;
+                                                            break;
+                                                        }
+                                                    }
                                                 }
                                                 if (item.InnerText.Contains(" ş."))
                                                 {
-
+                                                    announce.city_id = 26;
                                                 }
                                             }
                                         }
@@ -184,11 +249,14 @@ namespace WebApi.Services.YeniEmlakAz
                                            
                                         }
                                             ///////////////////IMAGE DOWNLOAD /////////////////////////
-                                        announce.cover = $@"YeniemlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
 
                                         var filePath = $@"YeniemlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
-                                        var images = uploader.ImageDownloader(doc, id.ToString(), filePath, httpClient);
+                                        var images = uploader.ImageDownloader(doc, filePath, httpClient);
                                         announce.logo_images = JsonSerializer.Serialize(await images);
+                                        var uri = new Uri(doc.DocumentNode.SelectNodes(".//div[@class='imgbox']//a")[0].Attributes["href"].Value);
+                                        var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                                        var fileExtension = Path.GetExtension(uriWithoutQuery);
+                                        announce.cover = $@"YeniemlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
 
                                         bool checkedNumber = false;
                                         var numberList = numbers.ToString().Split(',');
@@ -218,7 +286,11 @@ namespace WebApi.Services.YeniEmlakAz
                                     }
                                     if (duration >= maxRequest)
                                     {
-                                        Console.WriteLine("END***********");
+                                        model.last_id = (id - maxRequest);
+                                        isActive = false;
+                                        unitOfWork.ParserAnnounceRepository.Update(model);
+                                        duration = 0;
+                                        Console.WriteLine("******** END **********");
                                         break;
                                     }
                                 }

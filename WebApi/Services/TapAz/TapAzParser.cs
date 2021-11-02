@@ -173,22 +173,16 @@ namespace WebApi.Services.TapAz
                                                         announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
                                                         if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" m."))
                                                         {
-                                                            var metroName = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
-                                                            var resultMetroName = metrosNames.MetroName(metroName);
-                                                            var metros = unitOfWork.MetrosRepository.GetAll();
-                                                            
-                                                            foreach (var item in metros)
+                                                            var resultMetrosNames = metrosNames.GetMetroNameAll();
+
+                                                            foreach (var metroName in resultMetrosNames)
                                                             {
-                                                                if (resultMetroName == item.name)
+                                                                if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == metroName.Key)
                                                                 {
-                                                                    Console.WriteLine($"*********** RESULT {item.name} //////////////////");
-                                                                    announce.metro_id = item.id;
-                                                                    announce.region_id = item.region_id;
-                                                                    announce.settlement_id = item.settlement_id;
+                                                                    announce.metro_id = metroName.Value;
                                                                     break;
                                                                 }
                                                             }
-                                                            Console.WriteLine("metroo******************");
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" qəs."))
                                                         {
@@ -253,7 +247,6 @@ namespace WebApi.Services.TapAz
                                                     //    announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
                                                 }
                                                 announce.original_id = id;
-                                                announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
                                                 announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                                 announce.parser_site = model.site;
                                                 announce.announce_date = DateTime.Now;
@@ -263,6 +256,13 @@ namespace WebApi.Services.TapAz
                                                 ///////////////////IMAGES
                                                 var filePath = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                                 var images = _uploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+
+                                                var uri = new Uri(doc.DocumentNode.SelectNodes(".//div[@class='thumbnails']//a")[0].Attributes["href"].Value);
+
+                                                var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                                                var fileExtension = Path.GetExtension(uriWithoutQuery);
+                                                announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
+
                                                 announce.logo_images = JsonSerializer.Serialize(await images);
                                                 duration = 0;
 

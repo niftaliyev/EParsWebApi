@@ -12,6 +12,8 @@ namespace WebApi.Services.EmlakAz
         {
             if (type.StartsWith("İcarəyə verilir"))
                 return 1;
+            if (type.StartsWith("Kirayə"))
+                return 1;
             if (type.StartsWith("Satılır"))
                 return 2;
 

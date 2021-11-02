@@ -43,9 +43,9 @@ namespace WebApi.Services.TapAz
                 return 1;
             if (type.StartsWith("Satılır"))
                 return 2;
-            if (type.StartsWith("Satış"))
-                return 1;
             if (type.StartsWith("Kirayə"))
+                return 1;
+            if (type.StartsWith("Satış"))
                 return 2;
             return 0;
         }

@@ -17,11 +17,11 @@ namespace WebApi.Services.YeniEmlakAz
             _fileUploadHelper = fileUploadHelper;
         }
 
-        public async Task<List<string>> ImageDownloader(HtmlDocument doc, string id, string filePath, HttpClient httpClient)
+        public  Task<List<string>> ImageDownloader(HtmlDocument doc, string filePath, HttpClient httpClient)
         {
             List<string> list = new List<string>();
             bool isOpen = true;
-            list = await Task.Run(async () =>
+            return Task.Run(async () =>
             {
                 List<string> images = new List<string>();
                 try
@@ -51,13 +51,11 @@ namespace WebApi.Services.YeniEmlakAz
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Console.WriteLine(e.Message);
                 }
                 return images;
 
             });
-            return list;
-
         }
     }
 

@@ -54,6 +54,9 @@ namespace WebApi
             services.AddTransient<EmlakAzRegionsNames>();
             services.AddTransient<EmlakAzSettlementNames>();
             services.AddTransient<YeniEmlakAzRegionsNames>();
+            services.AddTransient<YeniEmlakAzMetrosNames>();
+            services.AddTransient<YeniEmlakAzCountryNames>();
+            services.AddTransient<YeniEmlakAzSettlementNames>();
 
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
