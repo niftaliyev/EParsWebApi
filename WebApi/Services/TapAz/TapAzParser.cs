@@ -59,7 +59,6 @@ namespace WebApi.Services.TapAz
                         var id = model.last_id;
 
                         isActive = true;
-                        unitOfWork.ParserAnnounceRepository.Update(model);
                         int x = 0;
                         int count = 0;
                         int duration = 0;
@@ -239,7 +238,7 @@ namespace WebApi.Services.TapAz
                                                     }
 
 
-                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText.StartsWith("Sahə, m²"))
+                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText.StartsWith("Sahə"))
                                                         announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
 
                                                     /////yerlesme yeri

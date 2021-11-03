@@ -236,7 +236,8 @@ namespace WebApi.Services.EmlakAz
                                             var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                             var images = await _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
 
-                                            var uri = new Uri(doc.DocumentNode.SelectNodes(".//img")[0].Attributes["src"].Value);
+
+                                            var uri = new Uri($"https://emlak.az{doc.DocumentNode.SelectSingleNode(".//div[@class='fotorama__stage__frame fotorama__loaded fotorama__loaded--img fotorama__active']//img").Attributes["src"].Value}");
 
                                             var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                                             var fileExtension = Path.GetExtension(uriWithoutQuery);

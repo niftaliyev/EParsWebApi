@@ -41,6 +41,8 @@ namespace WebApi.Services.TapAz
         {
             if (type.StartsWith("Kirayə verilir"))
                 return 1;
+            if (type.StartsWith("İcarəyə verilir"))
+                return 1;
             if (type.StartsWith("Satılır"))
                 return 2;
             if (type.StartsWith("Kirayə"))
