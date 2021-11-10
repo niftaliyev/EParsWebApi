@@ -246,6 +246,7 @@ namespace WebApi.Services.YeniEmlakAz
                                         Console.WriteLine(numbers.ToString());
                                         Console.WriteLine("----------------------------");
 
+                                        announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='ad']").InnerText;
                                            
                                         }
                                             ///////////////////IMAGE DOWNLOAD /////////////////////////

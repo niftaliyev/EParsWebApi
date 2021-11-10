@@ -102,7 +102,7 @@ namespace WebApi.Services.EmlakAz
                                                 announce.mobile = mobileregex;
 
 
-
+                                            announce.name = doc.DocumentNode.SelectSingleNode(".//p[@class='name-seller']").FirstChild.InnerText.Trim();
 
 
                                             Regex regex = new Regex("\\d+");
@@ -233,24 +233,17 @@ namespace WebApi.Services.EmlakAz
       
                                             announce.parser_site = model.site;
                                             /////////////////////////// ImageUploader //////////////////////////////
+                                           announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
+
                                             var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                             var images = await _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
-
-
-                                            var uri = new Uri($"https://emlak.az{doc.DocumentNode.SelectSingleNode(".//div[@class='fotorama__stage__frame fotorama__loaded fotorama__loaded--img fotorama__active']//img").Attributes["src"].Value}");
-
-                                            var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
-                                            var fileExtension = Path.GetExtension(uriWithoutQuery);
-                                            announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
-
                                             if (images != null)
                                             {
 
-                                                var jsonImages = string.Join(',', images);
-                                                if (jsonImages != null)
-                                                    announce.logo_images = jsonImages;
+                                                announce.logo_images = JsonSerializer.Serialize(images);
+
                                             }
-                                          
+
 
                                             announce.announce_date = DateTime.Now;
                                             counter = 0;
@@ -273,9 +266,9 @@ namespace WebApi.Services.EmlakAz
                                             }
 
 
-                                            var lastAnnounceId = unitOfWork.Announces.Create(announce);
+                                            var lastAnnounceId = await unitOfWork.Announces.Create(announce);
 
-                                            if(checkedNumber == false)
+                                            if (checkedNumber == false)
                                             {
                                                 Console.WriteLine("Search number in emlakbazasi *************");
                                                 //EMLAK - BAZASI
@@ -298,7 +291,7 @@ namespace WebApi.Services.EmlakAz
                                                 var marks = unitOfWork.MarkRepository.GetMarks(mapCordinats);
                                                 foreach (var item in marks)
                                                 {
-                                                    var announceMark = new AnnounceMark { announce_id = await lastAnnounceId, mark_id = item.id };
+                                                    var announceMark = new AnnounceMark { announce_id = lastAnnounceId, mark_id = item.id };
                                                     unitOfWork.MarkRepository.Create(announceMark);
                                                 }
 

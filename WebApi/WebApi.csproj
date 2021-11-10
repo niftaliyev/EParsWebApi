@@ -31,4 +31,8 @@
     <_ContentIncludedByDefault Remove="publish\WebApi.runtimeconfig.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\BinaAz\Interfaces\" />
+  </ItemGroup>
+
 </Project>

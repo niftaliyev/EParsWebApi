@@ -24,7 +24,7 @@ namespace WebApi.Repository
         }
         public async Task<int> Create(Announce announce)
         {
-            string uQuery = "INSERT INTO announces (original_id, mobile" +
+            string uQuery = "INSERT INTO announces (original_id, mobile,name" +
                 ",price,cover,parser_site" +
                 ",images,logo_images,room_count" +
                 ",rent_type,property_type,announce_type" +
@@ -33,7 +33,7 @@ namespace WebApi.Repository
                 "floor_count,current_floor,space,document" +
                 ",communal,text,view_count,announcer,announce_date,original_date,repair,city_id,number_checked)"
 
-                + "VALUES(@original_id,@mobile" +
+                + "VALUES(@original_id,@mobile,@name" +
                 ",@price,@cover,@parser_site" +
                 ",@images,@logo_images,@room_count" +
                 ",@rent_type,@property_type,@announce_type " +

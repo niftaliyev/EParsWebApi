@@ -26,22 +26,21 @@ namespace WebApi.Services.EmlakAz
                 return  1;
             if (type.EndsWith("Köhnə tikili"))
                 return 2;
-            if (type.EndsWith("Torpaq"))
-                return 3;
             if (type.EndsWith("Həyət evi"))
-                return 4;
+                return 3;
             if (type.EndsWith("Bağ evi"))
+                return 4;
+            if (type.EndsWith("Villa"))
                 return 5;
             if (type.EndsWith("Ofis"))
                 return 6;
             if (type.EndsWith("Qaraj"))
                 return 7;
             if (type.EndsWith("Torpaq"))
-                return 8;
-            if (type.EndsWith("Obyekt"))
                 return 9;
-            if (type.EndsWith("Villa"))
-                return 10;
+            if (type.EndsWith("Obyekt"))
+                return 7;
+
 
             return 0;
         }

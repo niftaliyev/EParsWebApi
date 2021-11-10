@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
@@ -249,7 +250,7 @@ namespace WebApi.Services.TapAz
                                                 announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                                 announce.parser_site = model.site;
                                                 announce.announce_date = DateTime.Now;
-
+                                                announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='name']").InnerText;
                                                 Console.WriteLine(proxies[x]);
 
                                                 ///////////////////IMAGES

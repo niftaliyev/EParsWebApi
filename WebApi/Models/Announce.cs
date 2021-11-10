@@ -10,6 +10,7 @@ namespace WebApi.Models
         public int id { get; set; }
         public int original_id { get; set; }
         public string mobile { get; set; }
+        public string name { get; set; }
         public int price { get; set; }
         public string cover { get; set; }
         public string parser_site { get; set; }

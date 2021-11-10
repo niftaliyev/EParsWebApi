@@ -22,6 +22,18 @@ namespace WebApi.Repository
             return connection.Query<Cities>(query);
         }
 
+        public IEnumerable<Region> GetAllRegions()
+        {
+            var query = "select * from regions";
+
+            return connection.Query<Region>(query);
+        }
+        public IEnumerable<Settlement> GetAllSettlement()
+        {
+            var query = "select * from settlement";
+
+            return connection.Query<Settlement>(query);
+        }
         public Cities GetById(int id)
         {
             throw new NotImplementedException();

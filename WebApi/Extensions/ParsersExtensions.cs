@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WebApi.Repository;
 using WebApi.Services;
+using WebApi.Services.BinaAz;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.TapAz;
 using WebApi.Services.YeniEmlakAz;
@@ -23,6 +24,7 @@ namespace WebApi.Extensions
             services.AddTransient<EmlakAzImageUploader>();
             services.AddTransient<YeniEmlakAzParser>();
             services.AddTransient<YeniEmlakAzParserImageUploader>();
+            services.AddTransient<BinaAzParser>();
             //services.AddTransient<CheckNumber>();
             return services;
         }
