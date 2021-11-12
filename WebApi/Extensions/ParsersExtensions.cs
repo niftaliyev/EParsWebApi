@@ -25,6 +25,7 @@ namespace WebApi.Extensions
             services.AddTransient<YeniEmlakAzParser>();
             services.AddTransient<YeniEmlakAzParserImageUploader>();
             services.AddTransient<BinaAzParser>();
+            services.AddTransient<BinaAzParserImageUploader>();
             //services.AddTransient<CheckNumber>();
             return services;
         }
