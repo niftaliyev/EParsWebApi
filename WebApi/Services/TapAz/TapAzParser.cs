@@ -247,8 +247,8 @@ namespace WebApi.Services.TapAz
                                                     //    announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
                                                 }
                                                 announce.original_id = id;
-                                                announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                                 announce.parser_site = model.site;
+                                                announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                                 announce.announce_date = DateTime.Now;
                                                 announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='name']").InnerText;
                                                 Console.WriteLine(proxies[x]);

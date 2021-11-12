@@ -35,9 +35,8 @@ namespace WebApi
                 options.Password = Configuration["ProxyServer:PasswordProxyServer"];
             });
 
-             //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlakcrawler;SslMode = none;"));
-            services.AddTransient(x => new UnitOfWork($"Server={Configuration["ConnectionStrings:server"]};Port=3306;Uid={Configuration["ConnectionStrings:username"]};Pwd={Configuration["ConnectionStrings:password"]};Database={Configuration["ConnectionStrings:dbname"]};SslMode = none;"));
-            //services.AddTransient(x => new UnitOfWork($"Server=localhost;Port=3306;Uid=emlakcrawler;Pwd=elgun123;Database=emlakcrawler;SslMode = none;"));
+             services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlakcrawler;SslMode = none;"));
+            //services.AddTransient(x => new UnitOfWork($"Server={Configuration["ConnectionStrings:server"]};Port=3306;Uid={Configuration["ConnectionStrings:username"]};Pwd={Configuration["ConnectionStrings:password"]};Database={Configuration["ConnectionStrings:dbname"]};SslMode = none;"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -85,7 +84,7 @@ namespace WebApi
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty;
+                //c.RoutePrefix = string.Empty;
             });
             
             app.UseHttpsRedirection();

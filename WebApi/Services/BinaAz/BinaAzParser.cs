@@ -62,7 +62,7 @@ namespace WebApi.Services.BinaAz
                             //    count = 0;
                             //}
                             duration++;
-                            if (duration >= 5)
+                            if (duration >= 15)
                             {
                                 duration = 0;
                                 break;
@@ -91,17 +91,70 @@ namespace WebApi.Services.BinaAz
                                     {
                                         doc.LoadHtml(html);
                                         Announce announce = new Announce();
-                                        //Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='services-container']//h1").InnerText);
-                                        announce.address = doc.DocumentNode.SelectSingleNode(".//div[@class='services-container']//h1").InnerText;
 
-                                        Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='map_address']").InnerText.Split("Ünvan: ")[1]);
-                                        Console.WriteLine($"price: {doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", "")}");
+                                        var address = doc.DocumentNode.SelectSingleNode(".//div[@class='map_address']").InnerText.Split("Ünvan: ")[1];
+                                        announce.address = address;
+                                        announce.original_id = id;
+                                        announce.parser_site = model.site;
+                                        announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", ""));
+                                        announce.announce_date = DateTime.Now;
+                                        announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='name']").FirstChild.InnerText;
+                                        announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='side']//article//p").InnerText;
+                                        announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='item_info']//p")[1].InnerText.Split(": ")[1]);
+                                        announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='item_info']//p")[2].InnerText;
+
+                                        if (doc.DocumentNode.SelectSingleNode(".//div[@class='services-container']//h1").InnerText.Contains("İcarəyə verilir"))
+                                            announce.announce_type = 1;
+                                        else if (doc.DocumentNode.SelectSingleNode(".//div[@class='services-container']//h1").InnerText.Contains("Satılır"))
+                                            announce.announce_type = 2;
+
+                                        foreach (var item in doc.DocumentNode.SelectNodes(".//table[@class='parameters']//tr"))
+                                        {
+                                            if (item.FirstChild.InnerText == "Kateqoriya")
+                                            {
+                                                if (item.LastChild.InnerText == "Yeni tikili")
+                                                    announce.property_type = 1;
+                                                else if (item.LastChild.InnerText == "Köhnə tikili")
+                                                    announce.property_type = 2;
+                                                else if (item.LastChild.InnerText == "Bağ")
+                                                    announce.property_type = 4;
+                                                else if (item.LastChild.InnerText == "Ev / Villa")
+                                                    announce.property_type = 5;
+                                                else if (item.LastChild.InnerText == "Ofis")
+                                                    announce.property_type = 6;
+                                                else if (item.LastChild.InnerText == "Obyekt")
+                                                    announce.property_type = 7;
+                                                else if (item.LastChild.InnerText == "Torpaq")
+                                                    announce.property_type = 9;
+                                                else if (item.LastChild.InnerText == "Qaraj")
+                                                    announce.property_type = 10;
+                                            }
+                                            if (item.FirstChild.InnerText == "Sahə")
+                                                announce.space = Int32.Parse(item.LastChild.InnerText.Split(" ")[0]);
+                                            if (item.FirstChild.InnerText == "Otaq sayı")
+                                                announce.room_count = Int32.Parse(item.LastChild.InnerText);
+                                            if (item.FirstChild.InnerText == "Mərtəbə")
+                                            {
+                                                announce.current_floor = Int32.Parse(item.LastChild.InnerText.Split(" / ")[0]);
+                                                announce.floor_count = Int32.Parse(item.LastChild.InnerText.Split(" / ")[1]);
+                                            }
+                                            if (item.FirstChild.InnerText == "Kupça")
+                                            {
+                                                if (item.LastChild.InnerText == "yoxdur")
+                                                    announce.document = 0;
+                                                if (item.LastChild.InnerText == "var")
+                                                    announce.document = 1;
+                                            }
+                                        }
+
+
+                                        /////city
                                         var cities = unitOfWork.CitiesRepository.GetAll();
                                         foreach (var city in cities)
                                         {
-                                            if (doc.DocumentNode.SelectSingleNode(".//div[@class='map_address']").InnerText.Split("Ünvan: ")[1].Contains(city.name))
+                                            if (address.Contains(city.name))
                                             {
-                                                Console.WriteLine(city.name);
+                                                announce.city_id = city.id;
                                                 break;
                                             }
                                         }
@@ -129,7 +182,7 @@ namespace WebApi.Services.BinaAz
                                                 {
                                                     if (item.InnerText.Contains(region.name))
                                                     {
-                                                        Console.WriteLine($"region name: {region.name}");
+                                                        announce.region_id = region.id;
                                                     }
                                                 }
                                             }
@@ -141,7 +194,8 @@ namespace WebApi.Services.BinaAz
                                                 {
                                                     if (item.InnerText.Contains(settlement.name))
                                                     {
-                                                        Console.WriteLine($"settlement name: {settlement.name}");
+                                                        announce.settlement_id = settlement.id;
+                                                        announce.region_id = settlement.region_id;
                                                     }
                                                 }
                                             }
@@ -170,22 +224,56 @@ namespace WebApi.Services.BinaAz
                                             }
                                             announce.mobile = numbers.ToString();
                                         }
-                                        ///////////////////////
-                                        Console.WriteLine(numbers.ToString());
+
+                                        bool checkedNumber = false;
+                                        var numberList = numbers.ToString().Split(',');
+                                        var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                        if (checkNumberRieltorResult > 0)
+                                        {
+                                            Console.WriteLine("FIND IN RIELTOR bASE bina.AZ");
+
+                                            announce.announcer = checkNumberRieltorResult;
+                                            announce.number_checked = true;
+                                            checkedNumber = true;
+                                            Console.WriteLine("Checked");
+
+                                        }
+
+                                        await unitOfWork.Announces.Create(announce);
+
+                                        if (checkedNumber == false)
+                                        {
+                                            Console.WriteLine("Find in emlak-baza bina.aZ");
+
+                                            //EMLAK - BAZASI
+                                            //await _emlakBaza.CheckAsync(_httpClient, id, numberList);
+                                        }
                                     }
                                 }
-                                else
+                                if (header.StatusCode.ToString() == "NotFound")
                                 {
-                                    Console.WriteLine(response.StatusCode.ToString());     /// not found
-                                    Console.WriteLine(response.IsSuccessStatusCode);       /// false
+                                    duration++;
                                 }
+                                if (duration >= maxRequest)
+                                {
+                                    model.last_id = (id - maxRequest);
+                                    isActive = false;
+                                    unitOfWork.ParserAnnounceRepository.Update(model);
+                                    duration = 0;
+                                    Console.WriteLine("******** END **********");
+                                    break;
+                                }
+                                //else
+                                //{
+                                //    Console.WriteLine(response.StatusCode.ToString());     /// not found
+                                //    Console.WriteLine(response.IsSuccessStatusCode);       /// false
+                                //}
                             }
                             catch (Exception e)
                             {
 
                                 Console.WriteLine(e.Message);
                             }
-                            Thread.Sleep(10000);
                         }
                     }
                     catch (Exception e)
