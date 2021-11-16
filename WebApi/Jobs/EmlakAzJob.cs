@@ -21,9 +21,9 @@ namespace WebApi.Jobs
             using var scope = _serviceScopeFactory.CreateScope();
             var provider = scope.ServiceProvider;
 
-            var recordService = provider.GetRequiredService<EmlakAzParser>();
+            var emlakAzService = provider.GetRequiredService<EmlakAzParser>();
 
-            await recordService.EmlakAzPars();
+            await emlakAzService.EmlakAzPars();
         }
     }
 }
