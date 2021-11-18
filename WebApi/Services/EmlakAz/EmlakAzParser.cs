@@ -314,6 +314,8 @@ namespace WebApi.Services.EmlakAz
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     counter = 0;
                                     Console.WriteLine($"= {maxRequest} = ");
+                                    TelegramBotService.Sender($"emlak.az limited {maxRequest}");
+
                                     Console.WriteLine(turn);
                                     break;
 
@@ -323,8 +325,9 @@ namespace WebApi.Services.EmlakAz
                         catch (Exception e)
                         {
                             Console.WriteLine(e.Message);
+                            TelegramBotService.Sender($"no connection {e.Message}");
+
                         }
-                        Thread.Sleep(1000);
                     } // while end
                 }      // if isactive      
 

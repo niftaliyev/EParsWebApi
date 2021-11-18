@@ -292,6 +292,8 @@ namespace WebApi.Services.YeniEmlakAz
                                         unitOfWork.ParserAnnounceRepository.Update(model);
                                         duration = 0;
                                         Console.WriteLine("******** END **********");
+                                        TelegramBotService.Sender($"yeniemlak.az limited");
+
                                         break;
                                     }
                                 }
@@ -300,6 +302,7 @@ namespace WebApi.Services.YeniEmlakAz
                         catch (Exception e)
                         {
                             Console.WriteLine("No Connection");
+                            TelegramBotService.Sender($"no connection {e.Message}");
                         }
                     }
                 }

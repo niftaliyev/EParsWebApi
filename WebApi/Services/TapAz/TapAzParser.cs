@@ -312,6 +312,8 @@ namespace WebApi.Services.TapAz
                                 {
                                     model.last_id = (id - maxRequest);
                                     Console.WriteLine("******** END **********");
+                                    TelegramBotService.Sender("tap.az limited");
+
                                     isActive = false;
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     duration = 0;
@@ -322,6 +324,8 @@ namespace WebApi.Services.TapAz
                             {
 
                                 Console.WriteLine($"no connection {e.Message}");
+                                TelegramBotService.Sender($"no connection {e.Message}");
+
                                 count = 10;
                             }
                         } // while end

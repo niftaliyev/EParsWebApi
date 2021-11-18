@@ -272,6 +272,8 @@ namespace WebApi.Services.BinaAz
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     duration = 0;
                                     Console.WriteLine("******** END **********");
+                                    TelegramBotService.Sender($"bina.az limited {maxRequest}");
+
                                     break;
                                 }
                                 //else
@@ -284,6 +286,8 @@ namespace WebApi.Services.BinaAz
                             {
 
                                 Console.WriteLine(e.Message);
+                                TelegramBotService.Sender($"bina.az exception {e.Message}");
+
                                 count = 10;
 
                             }
@@ -293,6 +297,7 @@ namespace WebApi.Services.BinaAz
                     {
 
                         Console.WriteLine(e.Message);
+                        TelegramBotService.Sender($"no connection {e.Message}");
 
                     }
                 }
