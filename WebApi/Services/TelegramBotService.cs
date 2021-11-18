@@ -26,7 +26,7 @@ namespace WebApi.Services
             if (text.ToLower().Trim() == "stop")
             {
                 chatIds.Remove(id);
-                Client.SendTextMessageAsync(id, "siz artiq qrupda ayrildiniz");
+                Client.SendTextMessageAsync(id, "siz qrupdan ayrildiniz");
 
             }
 
@@ -43,10 +43,10 @@ namespace WebApi.Services
 
             else
             {
-                if (text.Trim() == "123")
-                    Client.SendTextMessageAsync(id, "siz artiq qrupda varsiz");
+                if (text.Trim() == "123") 
+                    Client.SendTextMessageAsync(id, "siz artiq qrupda varsiz yeniden qosulmaqa ehtiac yoxdur !!!");
                 else
-                    Client.SendTextMessageAsync(id, "yazdiginiz sehvdir");
+                    Client.SendTextMessageAsync(id, "yazdiginiz sehvdir !!!");
             }
         }
 

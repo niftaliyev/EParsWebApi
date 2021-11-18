@@ -16,11 +16,12 @@ namespace WebApi.Services.ArendaAz
         }
         public async Task ArendaAzPars()
         {
-            Console.WriteLine("START");
-            var cities = unitOfWork.CitiesRepository.GetAll().ToList();
-            Random random = new Random();
-            var city = cities[random.Next(0,cities.Count-1)];
-            TelegramBotService.Sender(city.name);
+            //Console.WriteLine("START");
+            //var cities = unitOfWork.CitiesRepository.GetAll().ToList();
+            //Random random = new Random();
+            //var city = cities[random.Next(0, cities.Count - 1)];
+            //TelegramBotService.Sender(city.name);
+
         }
     }
 }

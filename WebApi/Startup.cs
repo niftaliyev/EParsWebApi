@@ -43,19 +43,7 @@ namespace WebApi
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "EParseWebApi", Version = "v1" });
             });
             services.AddHttpClient();
-            services.AddTransient<FileUploadHelper>();
-            services.AddTransient<HttpClientCreater>();
-            services.AddTransient<TapAzMetrosNames>();
-            services.AddTransient<TapAzRegionsNames>();
-            services.AddTransient<TapAzSettlementsNames>();
-            services.AddTransient<EmlakAzMetrosNames>();
-            services.AddTransient<EmlakAzMarksNames>();
-            services.AddTransient<EmlakAzRegionsNames>();
-            services.AddTransient<EmlakAzSettlementNames>();
-            services.AddTransient<YeniEmlakAzRegionsNames>();
-            services.AddTransient<YeniEmlakAzMetrosNames>();
-            services.AddTransient<YeniEmlakAzCountryNames>();
-            services.AddTransient<YeniEmlakAzSettlementNames>();
+
 
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
