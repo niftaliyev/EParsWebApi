@@ -14,6 +14,8 @@ using WebApi.Repository;
 using WebApi.Services;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakAz.Interfaces;
+using WebApi.Services.EmlakciAz;
+using WebApi.Services.EmlakciAz.Interfaces;
 using WebApi.Services.TapAz;
 using WebApi.Services.TapAz.Interfaces;
 using WebApi.Services.YeniEmlakAz;
@@ -47,6 +49,7 @@ namespace WebApi
 
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
+            services.AddTransient<ITypeOfPropertyEmlakciAz, TypeOfPropertyEmlakciAz>();
             services.AddParsers();
             services.AddJobs();
             services.AddHttpClient<ProxysHttpClient>().

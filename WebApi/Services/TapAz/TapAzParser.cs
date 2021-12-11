@@ -333,6 +333,8 @@ namespace WebApi.Services.TapAz
                     catch (Exception e)
                     {
                         Console.WriteLine(e.Message);
+                        TelegramBotService.Sender($"end catch {e.Message}");
+
                     }
 
                 }

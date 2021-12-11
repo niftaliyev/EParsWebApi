@@ -49,6 +49,10 @@ namespace WebApi.Extensions
             services.AddTransient<YeniEmlakAzMetrosNames>();
             services.AddTransient<YeniEmlakAzCountryNames>();
             services.AddTransient<YeniEmlakAzSettlementNames>();
+            services.AddTransient<EmlakciAzCountryNames>();
+            services.AddTransient<EmlakciAzMetrosNames>();
+            services.AddTransient<EmlakciAzRegionsNames>();
+            services.AddTransient<EmlakciAzSettlementNames>();
             return services;
         }
     }

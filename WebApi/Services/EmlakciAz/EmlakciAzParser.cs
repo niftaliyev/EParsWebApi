@@ -3,36 +3,46 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
+using WebApi.Services.EmlakciAz.Interfaces;
 
 namespace WebApi.Services.EmlakciAz
 {
     public class EmlakciAzParser
     {
-        private readonly EmlakBaza _emlakBaza;
-        //private readonly HttpClientCreater clientCreater;
+        private readonly EmlakBazaWithProxy _emlakBaza;
         private static bool isActive = false;
         private readonly UnitOfWork unitOfWork;
-       
-
+        private readonly ITypeOfPropertyEmlakciAz typeOfProperty;
         private HttpClient _httpClient;
+        private readonly EmlakciAzRegionsNames regionsNames;
+        private readonly EmlakciAzMetrosNames metrosNames;
+        private readonly EmlakciAzCountryNames countryNames;
+        private readonly EmlakciAzSettlementNames settlementNames;
         HttpResponseMessage header;
         public int maxRequest = 10;
-        //static string[] proxies = SingletonProxyServersIp.Instance;
 
-        public EmlakciAzParser(EmlakBaza emlakBaza,
+        public EmlakciAzParser(EmlakBazaWithProxy emlakBaza,
             HttpClientCreater clientCreater,
             UnitOfWork unitOfWork,
-            HttpClient httpClient)
+            ITypeOfPropertyEmlakciAz typeOfProperty,
+            HttpClient httpClient,
+            EmlakciAzRegionsNames regionsNames,
+            EmlakciAzMetrosNames metrosNames,
+            EmlakciAzCountryNames countryNames,
+            EmlakciAzSettlementNames settlementNames)
         {
             this._emlakBaza = emlakBaza;
-            //this.clientCreater = clientCreater;
             this.unitOfWork = unitOfWork;
-
-            // _httpClient = clientCreater.Create(proxies[0]);
+            this.typeOfProperty = typeOfProperty;
             _httpClient = httpClient;
+            this.regionsNames = regionsNames;
+            this.metrosNames = metrosNames;
+            this.countryNames = countryNames;
+            this.settlementNames = settlementNames;
         }
         public async Task EmlakciAzPars()
         {
@@ -55,7 +65,6 @@ namespace WebApi.Services.EmlakciAz
                         try
                         {
 
-                            Console.WriteLine(model.site);
 
                             Uri myUri = new Uri($"{model.site}/elanlar/view/{++id}", UriKind.Absolute);
                             header = await _httpClient.GetAsync(myUri);
@@ -65,7 +74,6 @@ namespace WebApi.Services.EmlakciAz
                             if (!header.RequestMessage.RequestUri.ToString().StartsWith("https://emlakci.az/index/index"))
                             {
                                 var response = await _httpClient.GetAsync(url);
-                                Console.WriteLine(response.StatusCode.ToString());
 
 
                                 if (response.IsSuccessStatusCode)
@@ -76,24 +84,23 @@ namespace WebApi.Services.EmlakciAz
                                         doc.LoadHtml(html);
                                         Announce announce = new Announce();
 
+                                        announce.parser_site = model.site;
                                         if (doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_info']") != null)
                                         {
-                                            Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_info']").InnerText);
                                             announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_info']").InnerText;
                                         }
 
                                         if (doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_basliq']") != null)
                                         {
-                                            Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_basliq']//span").InnerText);
-                                            Console.WriteLine($"ID: {doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_basliq']//label").InnerText.Replace("#","")}");
+                                            announce.original_id = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_basliq']//label").InnerText.Replace("#", ""));
                                         }
 
-                                        Console.WriteLine(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_connect_phone_ad']")[0]?.InnerText);
-
+                                        announce.name = doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_connect_phone_ad']")[0]?.InnerText;
+                                        announce.view_count = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_baxis']").LastChild.InnerText.Split(": ")[1]);
 
                                         var charsToRemove = new string[] { "(", ")", "-", ".", " " };
-
-                                        List<string> numbers = new List<string>();
+                                        List<string> numberList = new List<string>();
+                                        StringBuilder numbers = new StringBuilder();
                                         for (int i = 1; i < doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_connect_phone_ad']").Count; i++)
                                         {
                                             var number = doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_connect_phone_ad']")[i]?.InnerText;
@@ -102,44 +109,134 @@ namespace WebApi.Services.EmlakciAz
                                                 number = number.Replace(c, string.Empty);
 
                                             }
-                                            if (number != "&nbsp;" || number != " ")
-                                                numbers.Add(number);
-
+                                            if (number != "&nbsp;")
+                                            {
+                                                numberList.Add(number);
+                                                numbers.Append(number);
+                                            }
                                         }
+                                        announce.mobile = numbers.ToString();
 
-                                        foreach (var number in numbers)
-                                        {
-                                            Console.WriteLine(number);
-                                        }
+ 
+
 
                                         if (doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_right']") != null)
                                         {
                                             int xIndex = 0;
                                             foreach (var item in doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_left']"))
                                             {
-                                                //if (item.SelectSingleNode(".//div[@class='elan_inner_info_param_left']").InnerText == "Qiyməti:")
-                                                //    Console.WriteLine($"QIYMET {item.SelectSingleNode(".//div[@class='elan_inner_info_param_right']").InnerText}");
                                                 if (item.InnerText == "Qiyməti:")
-                                                    Console.WriteLine(Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split(" ")[0]));
+                                                    announce.price = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split(" ")[0]);
                                                 else if (item.InnerText == "Əmlakın növü:")
-                                                    Console.WriteLine(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText);
+                                                    announce.property_type = typeOfProperty.GetTitleOfProperty(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText);
                                                 else if (item.InnerText == "Sahəsi:")
-                                                    Console.WriteLine(Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split(" ")[0]));
+                                                    announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split(" ")[0]);
                                                 else if (item.InnerText == "Otaq sayı:")
-                                                    Console.WriteLine(Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText));
+                                                    announce.room_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText);
                                                 else if (item.InnerText == "Ünvanı:")
-                                                    Console.WriteLine(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText);
+                                                    announce.address = doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText;
                                                 else if (item.InnerText == "Mərtəbə:")
                                                 {
-                                                    Console.WriteLine(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split("/")[0]);
-                                                    Console.WriteLine(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split("/")[1]);
-
+                                                    announce.current_floor = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split("/")[0]);
+                                                    announce.floor_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split("/")[1]);
                                                 }
-
+                                                else if (item.InnerText == "Təmiri:")
+                                                {
+                                                    if (doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText == "Təmirli")
+                                                        announce.repair = true;
+                                                    else
+                                                        announce.repair = false;
+                                                }
+                                                else if (item.InnerText == "Kupçası:")
+                                                {
+                                                    if (doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText == "Var")
+                                                        announce.document = 1;
+                                                    else
+                                                        announce.document = 0;
+                                                }
                                                 xIndex++;
-                                                TelegramBotService.Sender($"{xIndex}");
 
                                             }
+                                        }
+
+                                        announce.announce_date = DateTime.Now;
+                                        announce.original_date = doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_baxis']//span").InnerText;
+
+
+                                        if (doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_basliq']//span").InnerText == "SATIŞ")
+                                            announce.announce_type = 2;
+                                        else if (doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_basliq']//span").InnerText == "İCARƏ (Aylıq)")
+                                            announce.announce_type = 1;
+
+                                        var regions = regionsNames.GetRegionsNamesAll();
+                                        var metros = metrosNames.GetMetroNameAll();
+                                        var cities = countryNames.GetCountryNames();
+                                        var settlements = settlementNames.GetSettlementsNamesAll();
+
+                                        var items = doc.DocumentNode.SelectNodes(".//div[@class='yerlesdiyi_yer_inner']//.//div[@class='unvanlari']");
+
+                                        for (int i = 0; i < items.Count; i++)
+                                        {
+                                            if (i == 0)
+                                            {
+                                                foreach (var city in cities)
+                                                {
+                                                    if (city.Key == items[i].InnerText)
+                                                        announce.city_id = city.Value;
+                                                }
+                                            }
+
+                                            if (items[i].InnerText.EndsWith(" r."))
+                                            {
+                                                foreach (var region in regions)
+                                                {
+                                                    if (region.Key == items[i].InnerText)
+                                                        announce.region_id = region.Value;
+                                                }
+                                            }
+                                            if (items[i].InnerText.EndsWith(" m."))
+                                            {
+                                                foreach (var metro in metros)
+                                                {
+                                                    if (metro.Key == items[i].InnerText)
+                                                        announce.metro_id = metro.Value;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                foreach (var settlement in settlements)
+                                                {
+                                                    if (settlement.Key == items[i].InnerText)
+                                                        announce.settlement_id = settlement.Value;
+                                                }
+                                            }
+                                        }
+
+
+
+
+                                        bool checkedNumber = false;
+                                        var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList.ToArray());
+                                        if (checkNumberRieltorResult > 0)
+                                        {
+                                            Console.WriteLine("FIND IN RIELTOR bASE emlakci.AZ");
+
+                                            announce.announcer = checkNumberRieltorResult;
+                                            announce.number_checked = true;
+                                            checkedNumber = true;
+                                            Console.WriteLine("Checked");
+
+                                        }
+
+
+                                        await unitOfWork.Announces.Create(announce);
+
+                                        if (checkedNumber == false)
+                                        {
+                                            Console.WriteLine("Find in emlak-baza emlakci.aZ");
+
+                                            //EMLAK - BAZASI
+                                           // await _emlakBaza.CheckAsync(_httpClient, id, numberList.ToArray());
                                         }
                                     }
                                 }
@@ -153,10 +250,8 @@ namespace WebApi.Services.EmlakciAz
                             {
                                 model.last_id = (id - maxRequest);
                                 Console.WriteLine("******** END emlakci **********");
-                                TelegramBotService.Sender("emlakci.az limited");
-
                                 isActive = false;
-                                //unitOfWork.ParserAnnounceRepository.Update(model);
+                                unitOfWork.ParserAnnounceRepository.Update(model);
                                 duration = 0;
                                 break;
                             }
@@ -165,6 +260,8 @@ namespace WebApi.Services.EmlakciAz
                         {
 
                             Console.WriteLine(e.Message);
+                            TelegramBotService.Sender($"end catch {e.Message}");
+
                         }
                     }
                 }

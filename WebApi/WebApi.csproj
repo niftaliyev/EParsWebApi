@@ -35,7 +35,6 @@
   <ItemGroup>
     <Folder Include="Services\ArendaAz\Interfaces\" />
     <Folder Include="Services\BinaAz\Interfaces\" />
-    <Folder Include="Services\EmlakciAz\Interfaces\" />
   </ItemGroup>
 
 </Project>

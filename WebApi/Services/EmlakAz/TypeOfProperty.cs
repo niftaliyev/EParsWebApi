@@ -12,9 +12,9 @@ namespace WebApi.Services.EmlakAz
         {
             if (type.StartsWith("İcarəyə verilir"))
                 return 1;
-            if (type.StartsWith("Kirayə"))
+            else if (type.StartsWith("Kirayə"))
                 return 1;
-            if (type.StartsWith("Satılır"))
+            else if (type.StartsWith("Satılır"))
                 return 2;
 
             return 0;
@@ -24,21 +24,21 @@ namespace WebApi.Services.EmlakAz
         {
             if (type.EndsWith("Yeni tikili"))
                 return  1;
-            if (type.EndsWith("Köhnə tikili"))
+            else if (type.EndsWith("Köhnə tikili"))
                 return 2;
-            if (type.EndsWith("Həyət evi"))
+            else if (type.EndsWith("Həyət evi"))
                 return 3;
-            if (type.EndsWith("Bağ evi"))
+            else if (type.EndsWith("Bağ evi"))
                 return 4;
-            if (type.EndsWith("Villa"))
+            else if (type.EndsWith("Villa"))
                 return 5;
-            if (type.EndsWith("Ofis"))
+            else if (type.EndsWith("Ofis"))
                 return 6;
-            if (type.EndsWith("Qaraj"))
+            else if (type.EndsWith("Qaraj"))
                 return 7;
-            if (type.EndsWith("Torpaq"))
+            else if (type.EndsWith("Torpaq"))
                 return 9;
-            if (type.EndsWith("Obyekt"))
+            else if (type.EndsWith("Obyekt"))
                 return 7;
 
 
