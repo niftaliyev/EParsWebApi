@@ -267,7 +267,7 @@ namespace WebApi.Services.EmlakAz
 
 
                                             var lastAnnounceId = await unitOfWork.Announces.Create(announce);
-
+                                            unitOfWork.Dispose();
                                             if (checkedNumber == false)
                                             {
                                                 Console.WriteLine("Search number in emlakbazasi *************");

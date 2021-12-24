@@ -29,11 +29,9 @@ namespace WebApi.Extensions
             services.AddTransient<YeniEmlakAzParserImageUploader>();
             services.AddTransient<BinaAzParser>();
             services.AddTransient<BinaAzParserImageUploader>();
-            services.AddTransient<ArendaAzParser>();
-            services.AddTransient<ArendaAzImageUploader>();
             services.AddTransient<EmlakciAzParser>();
             services.AddTransient<EmlakAzImageUploader>();
-
+            services.AddTransient<EmlakciAzImageUploader>();
 
 
             services.AddTransient<FileUploadHelper>();

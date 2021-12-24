@@ -271,6 +271,7 @@ namespace WebApi.Services.YeniEmlakAz
                                             Console.WriteLine("Checked YENIEMLAK");
                                         }
                                         await unitOfWork.Announces.Create(announce);
+                                        unitOfWork.Dispose();
 
                                         if (checkedNumber == false)
                                         {

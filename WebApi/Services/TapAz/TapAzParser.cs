@@ -281,6 +281,7 @@ namespace WebApi.Services.TapAz
                                                 }
 
                                                 await unitOfWork.Announces.Create(announce);
+                                                unitOfWork.Dispose();
 
                                                 if (checkedNumber == false)
                                                 {

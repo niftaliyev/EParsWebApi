@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -22,27 +23,29 @@ namespace WebApi.Services.EmlakciAz
         private readonly EmlakciAzMetrosNames metrosNames;
         private readonly EmlakciAzCountryNames countryNames;
         private readonly EmlakciAzSettlementNames settlementNames;
+        private readonly EmlakciAzImageUploader imageUploader;
         HttpResponseMessage header;
-        public int maxRequest = 10;
+        public int maxRequest = 50;
 
         public EmlakciAzParser(EmlakBazaWithProxy emlakBaza,
-            HttpClientCreater clientCreater,
             UnitOfWork unitOfWork,
             ITypeOfPropertyEmlakciAz typeOfProperty,
             HttpClient httpClient,
             EmlakciAzRegionsNames regionsNames,
             EmlakciAzMetrosNames metrosNames,
             EmlakciAzCountryNames countryNames,
-            EmlakciAzSettlementNames settlementNames)
+            EmlakciAzSettlementNames settlementNames,
+            EmlakciAzImageUploader imageUploader)
         {
             this._emlakBaza = emlakBaza;
             this.unitOfWork = unitOfWork;
             this.typeOfProperty = typeOfProperty;
-            _httpClient = httpClient;
+            this._httpClient = httpClient;
             this.regionsNames = regionsNames;
             this.metrosNames = metrosNames;
             this.countryNames = countryNames;
             this.settlementNames = settlementNames;
+            this.imageUploader = imageUploader;
         }
         public async Task EmlakciAzPars()
         {
@@ -60,12 +63,8 @@ namespace WebApi.Services.EmlakciAz
 
                     while (true)
                     {
-
-
                         try
                         {
-
-
                             Uri myUri = new Uri($"{model.site}/elanlar/view/{++id}", UriKind.Absolute);
                             header = await _httpClient.GetAsync(myUri);
                             var url = header.RequestMessage.RequestUri.AbsoluteUri;
@@ -79,7 +78,7 @@ namespace WebApi.Services.EmlakciAz
                                 if (response.IsSuccessStatusCode)
                                 {
                                     var html = await response.Content.ReadAsStringAsync();
-                                    if (!string.IsNullOrEmpty(html))
+                                    if (!string.IsNullOrEmpty(html) && doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_connect_phone_ad']")[0] != null)
                                     {
                                         doc.LoadHtml(html);
                                         Announce announce = new Announce();
@@ -94,10 +93,8 @@ namespace WebApi.Services.EmlakciAz
                                         {
                                             announce.original_id = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_basliq']//label").InnerText.Replace("#", ""));
                                         }
-
                                         announce.name = doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_connect_phone_ad']")[0]?.InnerText;
                                         announce.view_count = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_left_baxis']").LastChild.InnerText.Split(": ")[1]);
-
                                         var charsToRemove = new string[] { "(", ")", "-", ".", " " };
                                         List<string> numberList = new List<string>();
                                         StringBuilder numbers = new StringBuilder();
@@ -116,9 +113,6 @@ namespace WebApi.Services.EmlakciAz
                                             }
                                         }
                                         announce.mobile = numbers.ToString();
-
- 
-
 
                                         if (doc.DocumentNode.SelectSingleNode(".//div[@class='elan_inner_right']") != null)
                                         {
@@ -212,9 +206,6 @@ namespace WebApi.Services.EmlakciAz
                                             }
                                         }
 
-
-
-
                                         bool checkedNumber = false;
                                         var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList.ToArray());
                                         if (checkNumberRieltorResult > 0)
@@ -228,16 +219,31 @@ namespace WebApi.Services.EmlakciAz
 
                                         }
 
+                                        /////////////////////////// ImageUploader //////////////////////////////
+                                        announce.cover = $@"EmlakciAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
+
+                                        var filePath = $@"EmlakciAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
+                                        var images = await imageUploader.ImageDownloaderAsync(doc, filePath);
+                                  
+                                        if (images != null)
+                                        {
+                                            announce.logo_images = JsonSerializer.Serialize(images);
+                                            Console.WriteLine("saved images emlakci");
+                                        }
+
 
                                         await unitOfWork.Announces.Create(announce);
+                                        unitOfWork.Dispose();
 
                                         if (checkedNumber == false)
                                         {
                                             Console.WriteLine("Find in emlak-baza emlakci.aZ");
 
                                             //EMLAK - BAZASI
-                                           // await _emlakBaza.CheckAsync(_httpClient, id, numberList.ToArray());
+                                            await _emlakBaza.CheckAsync(id, numberList.ToArray());
                                         }
+
+
                                     }
                                 }
                             }
@@ -258,7 +264,6 @@ namespace WebApi.Services.EmlakciAz
                         }
                         catch (Exception e)
                         {
-
                             Console.WriteLine(e.Message);
                             TelegramBotService.Sender($"end catch {e.Message}");
 

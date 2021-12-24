@@ -63,7 +63,6 @@ namespace WebApi.Services.BinaAz
                                 _httpClient = clientCreater.Create(proxies[x]);
                                 count = 0;
                             }
-                            Console.WriteLine(x);
 
                             try
                             {
@@ -76,14 +75,12 @@ namespace WebApi.Services.BinaAz
                                 HtmlDocument doc = new HtmlDocument();
 
                                 var response = await _httpClient.GetAsync(url);
-                                //Console.WriteLine(response.StatusCode.ToString());
-                                //Console.WriteLine(response.IsSuccessStatusCode);
                                 Console.WriteLine(duration);
                                 
                                     if (response.IsSuccessStatusCode)
                                     {
                                         var html = await response.Content.ReadAsStringAsync();
-                                        if (!string.IsNullOrEmpty(html))
+                                        if (!string.IsNullOrEmpty(html) && doc.DocumentNode.SelectSingleNode(".//div[@class='name']") != null)
                                         {
                                             doc.LoadHtml(html);
                                             Announce announce = new Announce();
@@ -94,13 +91,13 @@ namespace WebApi.Services.BinaAz
                                             announce.parser_site = model.site;
                                             announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", ""));
                                             announce.announce_date = DateTime.Now;
-                                            announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='name']").FirstChild.InnerText;
+                                            announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='name']").FirstChild?.InnerText;
                                             announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='side']//article//p").InnerText;
                                             announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='item_info']//p")[1].InnerText.Split(": ")[1]);
                                             announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='item_info']//p")[2].InnerText;
 
 
-                                        ///////////////////IMAGES
+                                        /////////////////////IMAGES
                                         var filePath = $@"BinaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                         var images = imageUploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
 
@@ -110,7 +107,7 @@ namespace WebApi.Services.BinaAz
                                         var fileExtension = Path.GetExtension(uriWithoutQuery);
                                         announce.cover = $@"BinaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
                                         announce.logo_images = JsonSerializer.Serialize(await images);
-                                        /////////////////
+                                        ///////////////////
 
                                         if (doc.DocumentNode.SelectSingleNode(".//div[@class='services-container']//h1").InnerText.Contains("İcarəyə verilir"))
                                                 announce.announce_type = 1;
@@ -249,7 +246,7 @@ namespace WebApi.Services.BinaAz
                                             }
 
                                             await unitOfWork.Announces.Create(announce);
-
+                                            unitOfWork.Dispose();
                                             if (checkedNumber == false)
                                             {
                                                 Console.WriteLine("Find in emlak-baza bina.aZ");
