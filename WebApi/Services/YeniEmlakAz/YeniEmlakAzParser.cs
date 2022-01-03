@@ -222,7 +222,7 @@ namespace WebApi.Services.YeniEmlakAz
                                             }
                                             if (item.InnerText.EndsWith(" m2"))
                                             {
-                                                announce.space = Int32.Parse(item.FirstChild.InnerText);
+                                                    announce.space = item.FirstChild.InnerText;
                                             }
                                             
                                         }
@@ -302,8 +302,7 @@ namespace WebApi.Services.YeniEmlakAz
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine("No Connection");
-                            TelegramBotService.Sender($"no connection {e.Message}");
+                            TelegramBotService.Sender($"no connection yeniemlak.Az {e.Message}");
                         }
                     }
                 }

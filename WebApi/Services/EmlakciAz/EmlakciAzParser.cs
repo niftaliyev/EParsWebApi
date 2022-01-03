@@ -124,7 +124,7 @@ namespace WebApi.Services.EmlakciAz
                                                 else if (item.InnerText == "Əmlakın növü:")
                                                     announce.property_type = typeOfProperty.GetTitleOfProperty(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText);
                                                 else if (item.InnerText == "Sahəsi:")
-                                                    announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split(" ")[0]);
+                                                    announce.space = doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText.Split(" ")[0];
                                                 else if (item.InnerText == "Otaq sayı:")
                                                     announce.room_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='elan_inner_info_param_right']")[xIndex].InnerText);
                                                 else if (item.InnerText == "Ünvanı:")

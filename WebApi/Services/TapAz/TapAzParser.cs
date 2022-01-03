@@ -46,6 +46,7 @@ namespace WebApi.Services.TapAz
             this.settlementsNames = settlementsNames;
             this.regions = regions;
             _httpClient = clientCreater.Create(proxies[0]);
+            //_httpClient = httpClient;
             Console.WriteLine(proxies[0]);
         }
         public async Task TapAzPars()
@@ -74,7 +75,6 @@ namespace WebApi.Services.TapAz
                                 _httpClient = clientCreater.Create(proxies[x]);
                                 count = 0;
                             }
-                            Console.WriteLine(x);
 
                             try
                             {
@@ -126,7 +126,6 @@ namespace WebApi.Services.TapAz
 
 
                                                 }
-                                                Console.WriteLine(doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText);
                                                 Console.WriteLine(mobileregex);
 
                                                 if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2] != null)
@@ -167,7 +166,7 @@ namespace WebApi.Services.TapAz
 
                                                     }
 
-                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri" || doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşmə yeri")
+                                                    else if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri" || doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşmə yeri")
                                                     {
                                                         Console.WriteLine("Yerləşdirmə");
                                                         announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
@@ -232,19 +231,15 @@ namespace WebApi.Services.TapAz
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" pr."))
                                                         {
-                                                            //Console.WriteLine(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
                                                             announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
                                                             Console.WriteLine("Prospekt******************");
                                                         }
                                                     }
 
 
-                                                    if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText.StartsWith("Sahə"))
-                                                        announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
+                                                    else if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText.StartsWith("Sahə"))
+                                                        announce.space = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
 
-                                                    /////yerlesme yeri
-                                                    //if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == ("Yerləşmə yeri"))
-                                                    //    announce.space = Int32.Parse(doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText);
                                                 }
                                                 announce.original_id = id;
                                                 announce.parser_site = model.site;
@@ -264,6 +259,9 @@ namespace WebApi.Services.TapAz
                                                 announce.cover = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
 
                                                 announce.logo_images = JsonSerializer.Serialize(await images);
+
+                                                ////////////
+
                                                 duration = 0;
 
                                                 bool checkedNumber = false;
@@ -323,9 +321,8 @@ namespace WebApi.Services.TapAz
                             }
                             catch (Exception e)
                             {
-
-                                Console.WriteLine($"no connection {e.Message}");
-                                TelegramBotService.Sender($"no connection {e.Message}");
+                                Console.WriteLine($"no connection tap.az {e.Message}");
+                                TelegramBotService.Sender($"no connection tap.az {e.Message}");
 
                                 count = 10;
                             }
@@ -333,8 +330,7 @@ namespace WebApi.Services.TapAz
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
-                        TelegramBotService.Sender($"end catch {e.Message}");
+                        TelegramBotService.Sender($"end catch tap.az {e.Message}");
 
                     }
 

@@ -136,7 +136,7 @@ namespace WebApi.Services.BinaAz
                                                         announce.property_type = 10;
                                                 }
                                                 if (item.FirstChild.InnerText == "Sahə")
-                                                    announce.space = Int32.Parse(item.LastChild.InnerText.Split(" ")[0]);
+                                                    announce.space = item.LastChild.InnerText.Split(" ")[0];
                                                 if (item.FirstChild.InnerText == "Otaq sayı")
                                                     announce.room_count = Int32.Parse(item.LastChild.InnerText);
                                                 if (item.FirstChild.InnerText == "Mərtəbə")
@@ -205,7 +205,6 @@ namespace WebApi.Services.BinaAz
                                                         }
                                                     }
                                                 }
-                                                //Console.WriteLine($"----- {item.InnerText}");
                                             }
 
 
@@ -273,16 +272,10 @@ namespace WebApi.Services.BinaAz
 
                                     break;
                                 }
-                                //else
-                                //{
-                                //    Console.WriteLine(response.StatusCode.ToString());     /// not found
-                                //    Console.WriteLine(response.IsSuccessStatusCode);       /// false
-                                //}
                             }
                             catch (Exception e)
                             {
 
-                                Console.WriteLine(e.Message);
                                 TelegramBotService.Sender($"bina.az exception {e.Message}");
 
                                 count = 10;
@@ -293,8 +286,7 @@ namespace WebApi.Services.BinaAz
                     catch (Exception e)
                     {
 
-                        Console.WriteLine(e.Message);
-                        TelegramBotService.Sender($"no connection {e.Message}");
+                        TelegramBotService.Sender($"no connection bina.az {e.Message}");
 
                     }
                 }

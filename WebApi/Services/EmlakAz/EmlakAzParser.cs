@@ -180,7 +180,7 @@ namespace WebApi.Services.EmlakAz
                                                     if (item.InnerText.StartsWith("Sahə"))
                                                     {
                                                         var space = regex.Match(item.InnerText).ToString();
-                                                        announce.space = Int32.Parse(space);
+                                                        announce.space = space;
 
                                                     }
                                                     if (item.InnerText.StartsWith("Otaqların sayı"))
@@ -324,8 +324,7 @@ namespace WebApi.Services.EmlakAz
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(e.Message);
-                            TelegramBotService.Sender($"no connection {e.Message}");
+                            TelegramBotService.Sender($"no connection emlak.az {e.Message}");
 
                         }
                     } // while end
