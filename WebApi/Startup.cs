@@ -37,8 +37,8 @@ namespace WebApi
                 options.Password = Configuration["ProxyServer:PasswordProxyServer"];
             });
 
-            //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlakcrawler;SslMode = none;"));
-            services.AddTransient(x => new UnitOfWork($"Server={Configuration["ConnectionStrings:server"]};Port=3306;Uid={Configuration["ConnectionStrings:username"]};Pwd={Configuration["ConnectionStrings:password"]};Database={Configuration["ConnectionStrings:dbname"]};SslMode = none;"));
+            services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlakcrawler;SslMode = none;"));
+            //services.AddTransient(x => new UnitOfWork($"Server={Configuration["ConnectionStrings:server"]};Port=3306;Uid={Configuration["ConnectionStrings:username"]};Pwd={Configuration["ConnectionStrings:password"]};Database={Configuration["ConnectionStrings:dbname"]};SslMode = none;"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -52,14 +52,14 @@ namespace WebApi
             services.AddTransient<ITypeOfPropertyEmlakciAz, TypeOfPropertyEmlakciAz>();
             services.AddParsers();
             services.AddJobs();
-            services.AddHttpClient<ProxysHttpClient>().
-                ConfigurePrimaryHttpMessageHandler((c => new HttpClientHandler()
-                {
-                    Proxy = new WebProxy(Configuration["ProxyOptions:Address"])
-                    {
-                        Credentials = new NetworkCredential { UserName = Configuration["ProxyServer:Username"], Password = Configuration["ProxyServer:Password"] }
-                    }
-                }));
+            //services.AddHttpClient<ProxysHttpClient>().
+            //    ConfigurePrimaryHttpMessageHandler((c => new HttpClientHandler()
+            //    {
+            //        Proxy = new WebProxy(Configuration["ProxyOptions:Address"])
+            //        {
+            //            Credentials = new NetworkCredential { UserName = Configuration["ProxyServer:Username"], Password = Configuration["ProxyServer:Password"] }
+            //        }
+            //    }));
             services.AddCors(); // добавляем сервисы CORS
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -75,7 +75,7 @@ namespace WebApi
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty;
+                //c.RoutePrefix = string.Empty;
             });
             
             app.UseHttpsRedirection();

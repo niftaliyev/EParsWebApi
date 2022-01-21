@@ -31,8 +31,8 @@ namespace WebApi.Services
                     BypassProxyOnLocal = false,
                     UseDefaultCredentials = false,
                     Credentials = new NetworkCredential(
-                userName: $"{Username}",
-                password: $"{Password}")
+                userName: Username,
+                password: Password)
                 }
             }, disposeHandler: true);
         }
