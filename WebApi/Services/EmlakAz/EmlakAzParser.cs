@@ -26,7 +26,7 @@ namespace WebApi.Services.EmlakAz
         private readonly EmlakAzSettlementNames settlementNames;
         HttpResponseMessage header;
         static bool turn = false;
-        public int maxRequest = 50;
+        public const int maxRequest = 50;
         public EmlakAzParser(HttpClient httpClient,
             EmlakBazaWithProxy emlakBaza, 
             EmlakAzImageUploader uploader,

@@ -15,15 +15,23 @@ namespace WebApi.Services.LalafoAz
         private readonly LalafoCountryNames countryNames;
         private readonly LalafoSettlementsName settlementsName;
         private readonly LalafoImageUploader imageUploader;
+        private readonly EmlakBazaWithProxy bazaWithProxy;
+        private readonly LalalafoAzMetrosNames metrosNames;
         private static bool isActive = false;
+        public const int maxRequest = 50;
+
         HttpResponseMessage header;
-        public LalafoAzParser(HttpClient httpClient, UnitOfWork unitOfWork, LalafoCountryNames countryNames, LalafoSettlementsName settlementsName,LalafoImageUploader imageUploader)
+        public LalafoAzParser(HttpClient httpClient, UnitOfWork unitOfWork, 
+            LalafoCountryNames countryNames, LalafoSettlementsName settlementsName,
+            LalafoImageUploader imageUploader , EmlakBazaWithProxy bazaWithProxy,LalalafoAzMetrosNames metrosNames)
         {
             this.httpClient = httpClient;
             this.unitOfWork = unitOfWork;
             this.countryNames = countryNames;
             this.settlementsName = settlementsName;
             this.imageUploader = imageUploader;
+            this.bazaWithProxy = bazaWithProxy;
+            this.metrosNames = metrosNames;
         }
         public async Task LalafoAzPars()
         {
@@ -38,7 +46,7 @@ namespace WebApi.Services.LalafoAz
 
                     isActive = true;
                     int x = 0;
-                    int count = 0;
+                    int counter = 0;
                     int duration = 0;
                     while (true)
                     {
@@ -49,7 +57,6 @@ namespace WebApi.Services.LalafoAz
                             Uri myUri = new Uri($"{model.site}/baku/ads/{++id}", UriKind.Absolute);
                             header = await httpClient.GetAsync(myUri);
                             var url = header.RequestMessage.RequestUri.AbsoluteUri;
-                            count++;
                             HtmlDocument doc = new HtmlDocument();
 
 
@@ -60,6 +67,7 @@ namespace WebApi.Services.LalafoAz
 
                                 if (!string.IsNullOrEmpty(html))
                                 {
+                                    counter = 0;
                                     doc.LoadHtml(html);
                                     Announce announce = new Announce();
 
@@ -67,6 +75,8 @@ namespace WebApi.Services.LalafoAz
                                     {
                                         if (doc.DocumentNode.SelectNodes(".//ul[@class='desktop css-h8ujnu']//li//a")[2].InnerText == "Daşınmaz əmlak")
                                         {
+                               
+
                                             if (doc.DocumentNode.SelectSingleNode(".//span[@class='userName-text']") != null)
                                             {
 
@@ -77,7 +87,7 @@ namespace WebApi.Services.LalafoAz
 
                                                 var countries = countryNames.GetRegionsNamesAll();
                                                 var settlements = settlementsName.GetSettlementNamesAll();
-
+                                                var metros = metrosNames.GetMetroNameAll();
 
 
                                                 /// City search
@@ -98,8 +108,7 @@ namespace WebApi.Services.LalafoAz
                                                 if (price != null)
                                                     announce.price = price;
                                                 var mobile = dynjson.props.initialState.feed.adDetails[id.ToString()].item.mobile;
-                                                if (mobile != null)
-                                                    announce.mobile = mobile;
+                            
                                                 var name = dynjson.props.initialState.feed.adDetails[id.ToString()].item.username;
                                                 if (name != null)
                                                     announce.name = name;
@@ -107,9 +116,30 @@ namespace WebApi.Services.LalafoAz
                                                 if (text != null)
                                                     announce.text = text;
 
+                                                bool checkedNumber = false;
 
+
+                                                if (mobile != null)
+                                                {
+                                                    announce.mobile = mobile;
+
+                                                    var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(mobile.ToString());
+                                                    if (checkNumberRieltorResult > 0)
+                                                    {
+                                                        announce.number_checked = true;
+                                                        announce.announcer = checkNumberRieltorResult;
+                                                        checkedNumber = true;
+                                                    }
+                                                    if (checkedNumber == false)
+                                                    {
+                                                        //EMLAK - BAZASI
+
+                                                        //await bazaWithProxy.CheckAsync(id, mobile.ToString());
+                                                    }
+                                                }
                                                 announce.original_id = id;
                                                 announce.announce_date = DateTime.Now;
+                                                announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='about-ad-info__date']//span")[1].InnerText;
                                                 announce.parser_site = model.site;
 
                                            
@@ -131,6 +161,14 @@ namespace WebApi.Services.LalafoAz
                                                                 announce.region_id = setlement.Value;
                                                         }
                                                     }
+                                                    if (item.FirstChild.InnerText.StartsWith("Metro"))
+                                                    {
+                                                        foreach (var metro in metros)
+                                                        {
+                                                            if (metro.Key == item.LastChild.InnerText)
+                                                                announce.metro_id = metro.Value;
+                                                        }
+                                                    }
                                                 }
 
 
@@ -144,22 +182,51 @@ namespace WebApi.Services.LalafoAz
                                                 if (images != null)
                                                     announce.logo_images = JsonConvert.SerializeObject(images);
 
+
                                                 Console.WriteLine(announce.logo_images);
                                                 Console.WriteLine($"City {announce.city_id}");
                                                 Console.WriteLine($"Region {announce.region_id}");
 
                                                 Console.WriteLine(doc.DocumentNode.SelectNodes(".//ul[@class='desktop css-h8ujnu']//li//a")[2].InnerText);
+
+                                                if (images.Count > 0 && announce.city_id > 0)
+                                                {
+                                                    await unitOfWork.Announces.Create(announce);
+                                                    unitOfWork.Dispose();
+                                                }
+
                                             }
                                         }
 
                                     }
                                 }
                             }
+                            else
+                            {
+                                Console.WriteLine("404");
+                                Console.WriteLine(id);
+                                counter++;
+                                Console.WriteLine(counter);
+                                if (counter >= maxRequest)
+                                {
+                                    model.last_id = (id - maxRequest);
+                                    isActive = false;
+                                    unitOfWork.ParserAnnounceRepository.Update(model);
+                                    counter = 0;
+                                    Console.WriteLine($"= {maxRequest} = ");
+                                    //TelegramBotService.Sender($"emlak.az limited {maxRequest}");
+
+                                    break;
+
+                                }
+                            } // else end
                         }
                         catch (Exception e)
                         {
 
                             Console.WriteLine(e.Message);
+                            //TelegramBotService.Sender($"exception {e.Message}");
+
                         }
                     }
                 }

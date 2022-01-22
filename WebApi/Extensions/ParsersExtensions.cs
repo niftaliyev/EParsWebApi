@@ -56,6 +56,7 @@ namespace WebApi.Extensions
             services.AddTransient<EmlakciAzSettlementNames>();
             services.AddTransient<LalafoCountryNames>();
             services.AddTransient<LalafoSettlementsName>();
+            services.AddTransient<LalalafoAzMetrosNames>();
             return services;
         }
     }
