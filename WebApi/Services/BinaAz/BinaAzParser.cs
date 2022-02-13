@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -17,6 +18,7 @@ namespace WebApi.Services.BinaAz
         private readonly HttpClientCreater clientCreater;
         private static bool isActive = false;
         private readonly UnitOfWork unitOfWork;
+
         private HttpClient _httpClient;
         private readonly BinaAzParserImageUploader imageUploader;
         HttpResponseMessage header;
@@ -26,13 +28,15 @@ namespace WebApi.Services.BinaAz
         public BinaAzParser(EmlakBaza emlakBaza,
             HttpClientCreater clientCreater,
             UnitOfWork unitOfWork,
-            BinaAzParserImageUploader imageUploader)
+            BinaAzParserImageUploader imageUploader,
+            HttpClient httpClient)
         {
             this._emlakBaza = emlakBaza;
             this.clientCreater = clientCreater;
             this.unitOfWork = unitOfWork;
             this.imageUploader = imageUploader;
-            _httpClient = clientCreater.Create(proxies[0]);
+            //_httpClient = clientCreater.Create(proxies[0]);
+            _httpClient = httpClient;
             Console.WriteLine(proxies[0]);
         }
 
@@ -40,6 +44,9 @@ namespace WebApi.Services.BinaAz
         public async Task BinaAzPars()
         {
             var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://bina.az");
+            //_httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36");
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36");
+
             if (!isActive)
             {
                 if (model.isActive)
@@ -52,29 +59,37 @@ namespace WebApi.Services.BinaAz
                         int x = 0;
                         int count = 0;
                         int duration = 0;
+
+
                         while (true)
                         {
-                            if (count >= 10)
-                            {
-                                x++;
-                                if (x >= 350)
-                                    x = 0;
+                            //if (count >= 10)
+                            //{
+                            //    x++;
+                            //    if (x >= 350)
+                            //        x = 0;
 
-                                _httpClient = clientCreater.Create(proxies[x]);
-                                count = 0;
-                            }
+                            //    _httpClient = clientCreater.Create(proxies[x]);
+                            //    count = 0;
+                            //}
 
                             try
                             {
                                 Console.WriteLine(model.site);
 
                                 Uri myUri = new Uri($"{model.site}/items/{++id}", UriKind.Absolute);
+
+
+                                WebClient _httpClient = new WebClient();
+
                                 header = await _httpClient.GetAsync(myUri);
+
                                 var url = header.RequestMessage.RequestUri.AbsoluteUri;
                                 count++;
                                 HtmlDocument doc = new HtmlDocument();
 
                                 var response = await _httpClient.GetAsync(url);
+
                                 Console.WriteLine(duration);
                                 
                                     if (response.IsSuccessStatusCode)
@@ -97,17 +112,17 @@ namespace WebApi.Services.BinaAz
                                             announce.original_date = doc.DocumentNode.SelectNodes(".//div[@class='item_info']//p")[2].InnerText;
 
 
-                                        /////////////////////IMAGES
-                                        var filePath = $@"BinaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
-                                        var images = imageUploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                        ///////////////////////IMAGES
+                                        //var filePath = $@"BinaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
+                                        //var images = imageUploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
 
-                                        var uri = new Uri(doc.DocumentNode.SelectNodes(".//div[@class='thumbnail']")[0].Attributes["data-mfp-src"].Value);
+                                        //var uri = new Uri(doc.DocumentNode.SelectNodes(".//div[@class='thumbnail']")[0].Attributes["data-mfp-src"].Value);
 
-                                        var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
-                                        var fileExtension = Path.GetExtension(uriWithoutQuery);
-                                        announce.cover = $@"BinaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
-                                        announce.logo_images = JsonSerializer.Serialize(await images);
-                                        ///////////////////
+                                        //var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                                        //var fileExtension = Path.GetExtension(uriWithoutQuery);
+                                        //announce.cover = $@"BinaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
+                                        //announce.logo_images = JsonSerializer.Serialize(await images);
+                                        /////////////////////
 
                                         if (doc.DocumentNode.SelectSingleNode(".//div[@class='services-container']//h1").InnerText.Contains("İcarəyə verilir"))
                                                 announce.announce_type = 1;
@@ -251,7 +266,7 @@ namespace WebApi.Services.BinaAz
                                                 Console.WriteLine("Find in emlak-baza bina.aZ");
 
                                                 //EMLAK - BAZASI
-                                                await _emlakBaza.CheckAsync(_httpClient, id, numberList);
+                                                //await _emlakBaza.CheckAsync(_httpClient, id, numberList);
                                             }
                                         }
                                     }

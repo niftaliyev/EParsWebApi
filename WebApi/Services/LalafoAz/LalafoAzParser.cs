@@ -47,7 +47,6 @@ namespace WebApi.Services.LalafoAz
                     isActive = true;
                     int x = 0;
                     int counter = 0;
-                    int duration = 0;
                     while (true)
                     {
                         try
@@ -134,7 +133,7 @@ namespace WebApi.Services.LalafoAz
                                                     {
                                                         //EMLAK - BAZASI
 
-                                                        //await bazaWithProxy.CheckAsync(id, mobile.ToString());
+                                                        await bazaWithProxy.CheckAsync(id, mobile.ToString());
                                                     }
                                                 }
                                                 announce.original_id = id;
@@ -214,7 +213,7 @@ namespace WebApi.Services.LalafoAz
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     counter = 0;
                                     Console.WriteLine($"= {maxRequest} = ");
-                                    //TelegramBotService.Sender($"emlak.az limited {maxRequest}");
+                                    TelegramBotService.Sender($"emlak.az limited {maxRequest}");
 
                                     break;
 
@@ -225,7 +224,7 @@ namespace WebApi.Services.LalafoAz
                         {
 
                             Console.WriteLine(e.Message);
-                            //TelegramBotService.Sender($"exception {e.Message}");
+                            TelegramBotService.Sender($"exception {e.Message}");
 
                         }
                     }

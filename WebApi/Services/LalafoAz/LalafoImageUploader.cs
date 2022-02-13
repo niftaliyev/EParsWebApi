@@ -42,14 +42,14 @@ namespace WebApi.Services.LalafoAz
                                 if (turn)
                                 {
                                     var thumbUri = new Uri(item.Attributes["src"].Value);
-                                    //await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", thumbUri, httpClient);
+                                    await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", thumbUri, httpClient);
                                     turn = false;
                                 }
 
                                 var filename = Guid.NewGuid().ToString();
                                 var uri = new Uri(item.Attributes["src"].Value.Replace("api", "original"));
 
-                                //await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
+                                await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
 
                                 var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                                 var fileExtension = Path.GetExtension(uriWithoutQuery);

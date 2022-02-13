@@ -34,7 +34,7 @@ namespace WebApi.Services.TapAz
 
                         if (i == 0)
                         {
-                            await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri($"{link.Replace("full", "thumbnail")}"), httpClient);
+                            //await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri($"{link.Replace("full", "thumbnail")}"), httpClient);
 
                         }
 
@@ -49,7 +49,7 @@ namespace WebApi.Services.TapAz
                         var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                         var fileExtension = Path.GetExtension(uriWithoutQuery);
 
-                        await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
+                        //await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
 
                         //var indexStartUpload = filePath.IndexOf("UploadFile");
                         var fileEndPath = $"{filePath}{filename}{fileExtension}";

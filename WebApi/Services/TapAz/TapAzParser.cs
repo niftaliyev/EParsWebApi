@@ -286,7 +286,7 @@ namespace WebApi.Services.TapAz
                                                     Console.WriteLine("Find in emlak-baza tAP.aZ");
 
                                                     //EMLAK - BAZASI
-                                                    await _emlakBaza.CheckAsync(_httpClient, id, numberList);
+                                                    //await _emlakBaza.CheckAsync(_httpClient, id, numberList);
                                                 }
                                             }
 
