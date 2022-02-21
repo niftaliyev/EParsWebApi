@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WebApi.Models;
-using WebApi.Proxy;
 using WebApi.Repository;
 using WebApi.ViewModels;
 
@@ -51,8 +49,7 @@ namespace WebApi.Services
                                     {
                                     if (result.Trim() == "Vasitəçidir")
                                     {
-                                        Console.WriteLine(result.Trim());
-                                        Console.WriteLine(numbers[0]);
+                 
                                         for (int j = 0; j < numbers.Length; j++)
                                         {
                                             await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = numbers[j] });
@@ -66,8 +63,7 @@ namespace WebApi.Services
                                     else if (result.Trim() == "Vasitəçi deyil")
                                     {
                                         
-                                            Console.WriteLine(result.Trim());
-                                            Console.WriteLine("-------------------****************------------------------------");
+                         
                                         if (i == (numbers.Length - 1))
                                         {
                                             await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
@@ -79,11 +75,6 @@ namespace WebApi.Services
                                     }
                                     
 
-                                    else
-                                        {
-                                            Console.WriteLine(result.Trim());
-                                            Console.WriteLine("********************************************");
-                                        }
                                     }
                                 }
                             }
@@ -92,7 +83,7 @@ namespace WebApi.Services
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Data.ToString());
+
             }
         }
     }

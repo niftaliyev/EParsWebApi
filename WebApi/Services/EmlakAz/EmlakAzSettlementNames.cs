@@ -95,24 +95,7 @@ namespace WebApi.Services.EmlakAz
             settlementsNames.Add("Zirə",43);
             settlementsNames.Add("Çermet",99);
             settlementsNames.Add("Sabunçu",72);
-            //settlementsNames.Add("Papanin",);
-            //settlementsNames.Add("Ləhic Bağları",);
-            //settlementsNames.Add("Qara şəhər",);
-            //settlementsNames.Add("Şuşa",);
-            //settlementsNames.Add("Nübar",);
-            //settlementsNames.Add("Ümid",);
-            //settlementsNames.Add("Xaşaxuna",);
-            //settlementsNames.Add("6-cı parallel",);
-            //settlementsNames.Add("Xutor",);
-            //settlementsNames.Add("Kimya şəhərciyi",);
-            //settlementsNames.Add("Montin",);
-            //settlementsNames.Add("Güzdək",);
-            //settlementsNames.Add("Ağ şəhər",);
-            //settlementsNames.Add("Alatava 1",);
-            //settlementsNames.Add("Albalı",);
-            //settlementsNames.Add("Atyalı",);
-            //settlementsNames.Add("Corat",);
-            //settlementsNames.Add("Nasosnu",);
+      
         }
         public Dictionary<string, int> GetSettlementsNamesAll()
         {

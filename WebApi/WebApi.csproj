@@ -1,9 +1,16 @@
-﻿ <Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>76c757a7-9efc-40a6-b9a6-4100642ac8ed</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\BinaAz\Interfaces\**" />
+    <Content Remove="Services\BinaAz\Interfaces\**" />
+    <EmbeddedResource Remove="Services\BinaAz\Interfaces\**" />
+    <None Remove="Services\BinaAz\Interfaces\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.7.3.7" />
@@ -21,20 +28,5 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="publish\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="publish\appsettings.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\appsettings.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\WebApi.deps.json" />
-    <_ContentIncludedByDefault Remove="publish\publish\WebApi.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="publish\WebApi.deps.json" />
-    <_ContentIncludedByDefault Remove="publish\WebApi.runtimeconfig.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\ArendaAz\Interfaces\" />
-    <Folder Include="Services\BinaAz\Interfaces\" />
-  </ItemGroup>
 
 </Project>

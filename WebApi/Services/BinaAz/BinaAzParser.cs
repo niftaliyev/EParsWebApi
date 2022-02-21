@@ -1,11 +1,9 @@
 ﻿using HtmlAgilityPack;
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -37,7 +35,6 @@ namespace WebApi.Services.BinaAz
             this.imageUploader = imageUploader;
             //_httpClient = clientCreater.Create(proxies[0]);
             _httpClient = httpClient;
-            Console.WriteLine(proxies[0]);
         }
 
 
@@ -75,12 +72,10 @@ namespace WebApi.Services.BinaAz
 
                             try
                             {
-                                Console.WriteLine(model.site);
 
                                 Uri myUri = new Uri($"{model.site}/items/{++id}", UriKind.Absolute);
 
 
-                                WebClient _httpClient = new WebClient();
 
                                 header = await _httpClient.GetAsync(myUri);
 
@@ -90,7 +85,6 @@ namespace WebApi.Services.BinaAz
 
                                 var response = await _httpClient.GetAsync(url);
 
-                                Console.WriteLine(duration);
                                 
                                     if (response.IsSuccessStatusCode)
                                     {
@@ -189,7 +183,6 @@ namespace WebApi.Services.BinaAz
                                                     {
                                                         if (item.InnerText.Contains(metro.name))
                                                         {
-                                                            Console.WriteLine($"metro name: {metro.name}");
                                                             announce.metro_id = metro.id;
                                                             break;
                                                         }
@@ -250,12 +243,10 @@ namespace WebApi.Services.BinaAz
                                             var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
                                             if (checkNumberRieltorResult > 0)
                                             {
-                                                Console.WriteLine("FIND IN RIELTOR bASE bina.AZ");
 
                                                 announce.announcer = checkNumberRieltorResult;
                                                 announce.number_checked = true;
                                                 checkedNumber = true;
-                                                Console.WriteLine("Checked");
 
                                             }
 
@@ -263,7 +254,6 @@ namespace WebApi.Services.BinaAz
                                             unitOfWork.Dispose();
                                             if (checkedNumber == false)
                                             {
-                                                Console.WriteLine("Find in emlak-baza bina.aZ");
 
                                                 //EMLAK - BAZASI
                                                 //await _emlakBaza.CheckAsync(_httpClient, id, numberList);
@@ -282,7 +272,6 @@ namespace WebApi.Services.BinaAz
                                     isActive = false;
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     duration = 0;
-                                    Console.WriteLine("******** END **********");
                                     TelegramBotService.Sender($"bina.az limited {maxRequest}");
 
                                     break;

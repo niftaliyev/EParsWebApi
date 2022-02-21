@@ -51,7 +51,6 @@ namespace WebApi.Services.LalafoAz
                     {
                         try
                         {
-                            Console.WriteLine(model.site);
 
                             Uri myUri = new Uri($"{model.site}/baku/ads/{++id}", UriKind.Absolute);
                             header = await httpClient.GetAsync(myUri);
@@ -174,7 +173,7 @@ namespace WebApi.Services.LalafoAz
 
 
                                                 /////////////////////////// ImageUploader //////////////////////////////
-                                                announce.cover = $@"LalafoAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
+                                                announce.cover = $@"LalafoAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpeg";
 
                                                 var filePath = $@"LalafoAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                                 var images = await imageUploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
@@ -182,11 +181,7 @@ namespace WebApi.Services.LalafoAz
                                                     announce.logo_images = JsonConvert.SerializeObject(images);
 
 
-                                                Console.WriteLine(announce.logo_images);
-                                                Console.WriteLine($"City {announce.city_id}");
-                                                Console.WriteLine($"Region {announce.region_id}");
 
-                                                Console.WriteLine(doc.DocumentNode.SelectNodes(".//ul[@class='desktop css-h8ujnu']//li//a")[2].InnerText);
 
                                                 if (images.Count > 0 && announce.city_id > 0)
                                                 {
@@ -202,17 +197,14 @@ namespace WebApi.Services.LalafoAz
                             }
                             else
                             {
-                                Console.WriteLine("404");
-                                Console.WriteLine(id);
+     
                                 counter++;
-                                Console.WriteLine(counter);
                                 if (counter >= maxRequest)
                                 {
                                     model.last_id = (id - maxRequest);
                                     isActive = false;
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     counter = 0;
-                                    Console.WriteLine($"= {maxRequest} = ");
                                     TelegramBotService.Sender($"emlak.az limited {maxRequest}");
 
                                     break;
@@ -223,7 +215,6 @@ namespace WebApi.Services.LalafoAz
                         catch (Exception e)
                         {
 
-                            Console.WriteLine(e.Message);
                             TelegramBotService.Sender($"exception {e.Message}");
 
                         }

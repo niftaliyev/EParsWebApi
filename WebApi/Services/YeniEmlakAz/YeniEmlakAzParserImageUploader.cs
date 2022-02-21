@@ -51,7 +51,6 @@ namespace WebApi.Services.YeniEmlakAz
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
                 }
                 return images;
 

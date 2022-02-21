@@ -66,7 +66,6 @@ namespace WebApi.Services.LalafoAz
             catch (Exception)
             {
 
-                throw;
             }
             return list;
         }

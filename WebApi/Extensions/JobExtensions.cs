@@ -19,8 +19,6 @@ namespace WebApi.Extensions
             services.AddHostedService<YeniEmlakAzScheduleService>();
             services.AddTransient<BinaAzJob>();
             services.AddHostedService<BinaAzScheduleService>();
-            services.AddTransient<ArendaAzJob>();
-            services.AddHostedService<ArendaAzScheduleService>();
             services.AddTransient<EmlakciAzJob>();
             services.AddHostedService<EmlakciAzScheduleService>();
             services.AddTransient<LalalafoAzJob>();

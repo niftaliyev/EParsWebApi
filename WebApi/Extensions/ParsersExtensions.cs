@@ -1,12 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using WebApi.Helpers;
-using WebApi.Repository;
 using WebApi.Services;
-using WebApi.Services.ArendaAz;
 using WebApi.Services.BinaAz;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakciAz;
