@@ -49,7 +49,7 @@ namespace WebApi.Services.TapAz
         }
         public async Task TapAzPars()
         {
-            var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");            
+            var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");
             if (!isActive)
             {
                 if (model.isActive)
@@ -73,7 +73,6 @@ namespace WebApi.Services.TapAz
                                 _httpClient = clientCreater.Create(proxies[x]);
                                 count = 0;
                             }
-
                             try
                             {
 
@@ -106,7 +105,6 @@ namespace WebApi.Services.TapAz
                                                 if (doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p") != null)
                                                     announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p").InnerText;
 
-                                                Console.WriteLine(announce.text);
                                                 string mobileregex = doc.DocumentNode.SelectSingleNode(".//a[@class='phone']").InnerText;
 
                                                 if (mobileregex != null)

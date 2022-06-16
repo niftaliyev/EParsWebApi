@@ -50,9 +50,9 @@ namespace WebApi.Services.EmlakAz
         public async Task EmlakAzPars()
         {
             var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://emlak.az");
-            if (model.isActive)
+            if (!isActive)
             {
-                if (!isActive)
+                if (model.isActive)
                 {
                     turn = true;
                     var id = model.last_id;

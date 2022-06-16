@@ -23,6 +23,8 @@ namespace WebApi.Extensions
             services.AddHostedService<EmlakciAzScheduleService>();
             services.AddTransient<LalalafoAzJob>();
             services.AddHostedService<LalafoAzScheduleService>();
+            services.AddTransient<DashinmazEmlakJob>();
+            services.AddHostedService<DashinmazEmlakAzScheduleService>();
             return services;
         }
     }

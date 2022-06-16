@@ -54,9 +54,9 @@ namespace WebApi.Services.YeniEmlakAz
             int counter = 0;
 
 
-            if (!isActive)
+            if (model.isActive)
             {
-                if (model.isActive)
+                if (!isActive)
                 {
                     int x = 0;
                     int count = 0;

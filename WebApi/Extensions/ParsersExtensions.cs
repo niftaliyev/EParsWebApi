@@ -2,6 +2,7 @@
 using WebApi.Helpers;
 using WebApi.Services;
 using WebApi.Services.BinaAz;
+using WebApi.Services.DashinmazEmlak;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakciAz;
 using WebApi.Services.LalafoAz;
@@ -29,6 +30,9 @@ namespace WebApi.Extensions
             services.AddTransient<EmlakciAzImageUploader>();
             services.AddTransient<LalafoAzParser>();
             services.AddTransient<LalafoImageUploader>();
+
+
+            services.AddTransient<DashinmazEmlakParser>();
 
 
             services.AddTransient<FileUploadHelper>();
