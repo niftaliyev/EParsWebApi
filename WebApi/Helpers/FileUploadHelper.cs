@@ -49,7 +49,7 @@ namespace WebApi.Helpers
                     // Get the file extension
                     var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                     var fileExtension = Path.GetExtension(uriWithoutQuery);
-         
+
                     var imageBytes = await httpClient.GetByteArrayAsync(uri);
 
                     var s3 = new AmazonS3Client("AKIAXGTYXE7SOLQTSWUO", "j4+pHSZIFdIE/a8yXd3RaFXuzkDDjAx+xmQa0wRN", RegionEndpoint.EUCentral1);
@@ -68,8 +68,8 @@ namespace WebApi.Helpers
                 }
                 catch (AggregateException e)
                 {
-                    Console.WriteLine(e.Message);
                 }
+
             });
         }
     }

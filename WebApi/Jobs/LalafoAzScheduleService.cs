@@ -6,15 +6,14 @@ using System.Threading.Tasks;
 
 namespace WebApi.Jobs
 {
-    public class ArendaAzScheduleService : JobScheduleService<ArendaAzJob>
+    public class LalafoAzScheduleService : JobScheduleService<LalalafoAzJob>
     {
-        public ArendaAzScheduleService(IServiceProvider serviceProvider) : base(serviceProvider)
+        public LalafoAzScheduleService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-
         }
         protected override TriggerBuilder ConfigureTrigger(TriggerBuilder triggerBuilder)
         {
-            return triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInSeconds(5).RepeatForever());
+            return triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInHours(5).RepeatForever());
         }
     }
 }

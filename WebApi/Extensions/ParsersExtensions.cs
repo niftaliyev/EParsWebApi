@@ -1,15 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using WebApi.Helpers;
-using WebApi.Repository;
 using WebApi.Services;
-using WebApi.Services.ArendaAz;
 using WebApi.Services.BinaAz;
+using WebApi.Services.DashinmazEmlak;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakciAz;
+using WebApi.Services.LalafoAz;
 using WebApi.Services.TapAz;
 using WebApi.Services.YeniEmlakAz;
 
@@ -32,6 +28,11 @@ namespace WebApi.Extensions
             services.AddTransient<EmlakciAzParser>();
             services.AddTransient<EmlakAzImageUploader>();
             services.AddTransient<EmlakciAzImageUploader>();
+            services.AddTransient<LalafoAzParser>();
+            services.AddTransient<LalafoImageUploader>();
+
+
+            services.AddTransient<DashinmazEmlakParser>();
 
 
             services.AddTransient<FileUploadHelper>();
@@ -51,6 +52,9 @@ namespace WebApi.Extensions
             services.AddTransient<EmlakciAzMetrosNames>();
             services.AddTransient<EmlakciAzRegionsNames>();
             services.AddTransient<EmlakciAzSettlementNames>();
+            services.AddTransient<LalafoCountryNames>();
+            services.AddTransient<LalafoSettlementsName>();
+            services.AddTransient<LalalafoAzMetrosNames>();
             return services;
         }
     }

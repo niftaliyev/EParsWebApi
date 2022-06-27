@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace WebApi.Services.EmlakciAz
+namespace WebApi.Services.LalafoAz
 {
-    public class EmlakciAzCountryNames
+    public class LalafoCountryNames
     {
         Dictionary<string, int> countryNames = new Dictionary<string, int>();
 
-        public EmlakciAzCountryNames()
+        public LalafoCountryNames()
         {
             countryNames.Add("Bakı", 1);
             countryNames.Add("Abşeron", 75);
@@ -16,8 +19,8 @@ namespace WebApi.Services.EmlakciAz
             countryNames.Add("Ağdaş", 4);
             countryNames.Add("Ağstafa", 6);
             countryNames.Add("Ağsu", 7);
-            countryNames.Add("Astara ", 8);
-            countryNames.Add("Balakən ", 9);
+            countryNames.Add("Astara", 8);
+            countryNames.Add("Balakən", 9);
             countryNames.Add("Bərdə", 11);
             countryNames.Add("Beyləqan", 10);
             countryNames.Add("Biləsuvar", 12);
@@ -27,13 +30,13 @@ namespace WebApi.Services.EmlakciAz
             countryNames.Add("Dəliməmmədli", 74);
             countryNames.Add("Füzuli", 16);
             countryNames.Add("Gədəbəy", 17);
-            countryNames.Add("Goranboy ", 19);
+            countryNames.Add("Goranboy", 19);
             countryNames.Add("Göyçay", 20);
             countryNames.Add("Göygöl", 21);
             countryNames.Add("Göytəpə", 22);
             countryNames.Add("Hacıqabul", 23);
             countryNames.Add("Horadiz", 73);
-            countryNames.Add("İmişli ", 31);
+            countryNames.Add("İmişli", 31);
             countryNames.Add("İsmayıllı", 32);
             countryNames.Add("Kəlbəcər", 33);
             countryNames.Add("Kürdəmir", 34);
@@ -70,22 +73,19 @@ namespace WebApi.Services.EmlakciAz
             countryNames.Add("Ucar", 64);
             countryNames.Add("Xaçmaz", 24);
             countryNames.Add("Xudat", 30);
-            countryNames.Add("Xaçmaz / Nabran", 71);
+            countryNames.Add("Nabran", 71);
             countryNames.Add("Xızı", 27);
             countryNames.Add("Xocavənd", 29);
-            countryNames.Add("Ağcəbədi", 2);
+            countryNames.Add("Ağcabədi", 2);
             countryNames.Add("Yardımlı", 65);
             countryNames.Add("Yevlax", 66);
             countryNames.Add("Zaqatala", 67);
             countryNames.Add("Zəngilan", 68);
             countryNames.Add("Zərdab", 69);
             countryNames.Add("Ağdam", 3);
-
-            countryNames.Add("Ağcabədi", 2);
-
         }
 
-        public Dictionary<string, int> GetCountryNames()
+        public Dictionary<string, int> GetRegionsNamesAll()
         {
             return countryNames;
         }

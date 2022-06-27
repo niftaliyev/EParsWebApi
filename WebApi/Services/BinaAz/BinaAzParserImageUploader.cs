@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using WebApi.Helpers;
@@ -50,9 +49,8 @@ namespace WebApi.Services.BinaAz
                         images.Add(fileEndPath);
                     }                    
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine(e);
                 }
                 return images;
 

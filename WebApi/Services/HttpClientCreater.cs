@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using WebApi.Options;
 
 namespace WebApi.Services
@@ -31,8 +28,8 @@ namespace WebApi.Services
                     BypassProxyOnLocal = false,
                     UseDefaultCredentials = false,
                     Credentials = new NetworkCredential(
-                userName: $"{Username}",
-                password: $"{Password}")
+                userName: Username,
+                password: Password)
                 }
             }, disposeHandler: true);
         }

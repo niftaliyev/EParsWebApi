@@ -4,7 +4,6 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -26,9 +25,9 @@ namespace WebApi.Services.EmlakAz
         private readonly EmlakAzSettlementNames settlementNames;
         HttpResponseMessage header;
         static bool turn = false;
-        public int maxRequest = 50;
+        public const int maxRequest = 50;
         public EmlakAzParser(HttpClient httpClient,
-            EmlakBazaWithProxy emlakBaza, 
+            EmlakBazaWithProxy emlakBaza,
             EmlakAzImageUploader uploader,
             UnitOfWork unitOfWork,
             ITypeOfProperty typeOfProperty,
@@ -51,9 +50,9 @@ namespace WebApi.Services.EmlakAz
         public async Task EmlakAzPars()
         {
             var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://emlak.az");
-            if (model.isActive)
+            if (!isActive)
             {
-                if (!isActive)
+                if (model.isActive)
                 {
                     turn = true;
                     var id = model.last_id;
@@ -66,7 +65,6 @@ namespace WebApi.Services.EmlakAz
                         Announce announce = new Announce();
                         try
                         {
-                            Console.WriteLine(model.site);
                             header = await httpClient.GetAsync($"{model.site}/{++id}-.html");
                             string url = header.RequestMessage.RequestUri.AbsoluteUri;
                             if (!url.EndsWith("/site"))
@@ -169,7 +167,7 @@ namespace WebApi.Services.EmlakAz
                                                         break;
                                                     }
                                                 }
-                                            }    
+                                            }
 
                                             foreach (var item in doc.DocumentNode.SelectNodes(".//dl[@class='technical-characteristics']//dd"))
                                             {
@@ -202,7 +200,7 @@ namespace WebApi.Services.EmlakAz
                                                 }
                                             }
 
-                              
+
 
 
 
@@ -230,10 +228,10 @@ namespace WebApi.Services.EmlakAz
                                             if (doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong") != null)
                                                 announce.original_date = doc.DocumentNode.SelectSingleNode(".//span[@class='date']//strong").InnerText;
 
-      
+
                                             announce.parser_site = model.site;
                                             /////////////////////////// ImageUploader //////////////////////////////
-                                           announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
+                                            announce.cover = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb.jpg";
 
                                             var filePath = $@"EmlakAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
                                             var images = await _uploader.ImageDownloaderAsync(doc, id.ToString(), filePath);
@@ -251,10 +249,9 @@ namespace WebApi.Services.EmlakAz
                                             bool checkedNumber = false;
                                             var numberList = mobileregex.Split(',');
                                             var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                            
+
                                             if (checkNumberRieltorResult > 0)
                                             {
-                                                Console.WriteLine("FIND NUMBER IN RIELTORS TABLE**************");
                                                 announce.number_checked = true;
                                                 announce.announcer = checkNumberRieltorResult;
                                                 checkedNumber = true;
@@ -270,12 +267,11 @@ namespace WebApi.Services.EmlakAz
                                             unitOfWork.Dispose();
                                             if (checkedNumber == false)
                                             {
-                                                Console.WriteLine("Search number in emlakbazasi *************");
                                                 //EMLAK - BAZASI
-                                              await _emlakBaza.CheckAsync(id, numberList);
+                                                await _emlakBaza.CheckAsync(id, numberList);
                                             }
 
-                             
+
 
                                             if (doc.GetElementbyId("google_map").GetAttributeValue("value", "") != null)
                                             {
@@ -302,9 +298,7 @@ namespace WebApi.Services.EmlakAz
                             } //if end
                             else
                             {
-                                Console.WriteLine("404");
-                                Console.WriteLine(id);
-                                Console.WriteLine(turn);
+
                                 counter++;
                                 if (counter >= maxRequest)
                                 {
@@ -313,10 +307,8 @@ namespace WebApi.Services.EmlakAz
                                     turn = false;
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     counter = 0;
-                                    Console.WriteLine($"= {maxRequest} = ");
                                     TelegramBotService.Sender($"emlak.az limited {maxRequest}");
 
-                                    Console.WriteLine(turn);
                                     break;
 
                                 }

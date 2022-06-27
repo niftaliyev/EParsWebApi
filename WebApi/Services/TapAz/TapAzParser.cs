@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
@@ -47,11 +46,10 @@ namespace WebApi.Services.TapAz
             this.regions = regions;
             _httpClient = clientCreater.Create(proxies[0]);
             //_httpClient = httpClient;
-            Console.WriteLine(proxies[0]);
         }
         public async Task TapAzPars()
         {
-            var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");            
+            var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://tap.az");
             if (!isActive)
             {
                 if (model.isActive)
@@ -75,10 +73,8 @@ namespace WebApi.Services.TapAz
                                 _httpClient = clientCreater.Create(proxies[x]);
                                 count = 0;
                             }
-
                             try
                             {
-                                Console.WriteLine(model.site);
 
                                 Uri myUri = new Uri($"{model.site}/elanlar/-/-/{++id}", UriKind.Absolute);
                                 header = await _httpClient.GetAsync(myUri);
@@ -89,7 +85,6 @@ namespace WebApi.Services.TapAz
                                 if (header.RequestMessage.RequestUri.ToString().StartsWith("https://tap.az/elanlar/dasinmaz-emlak/"))
                                 {
                                     var response = await _httpClient.GetAsync(url);
-                                    Console.WriteLine(response.StatusCode.ToString());
 
 
                                     if (response.IsSuccessStatusCode)
@@ -104,12 +99,11 @@ namespace WebApi.Services.TapAz
                                             {
                                                 if (doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']") != null)
                                                     announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", ""));
-
+                                                
                                                 //if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
                                                 //announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
                                                 if (doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p") != null)
                                                     announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p").InnerText;
-
 
                                                 string mobileregex = doc.DocumentNode.SelectSingleNode(".//a[@class='phone']").InnerText;
 
@@ -126,7 +120,6 @@ namespace WebApi.Services.TapAz
 
 
                                                 }
-                                                Console.WriteLine(mobileregex);
 
                                                 if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2] != null)
                                                 {
@@ -168,7 +161,6 @@ namespace WebApi.Services.TapAz
 
                                                     else if (doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşdirmə yeri" || doc.DocumentNode.SelectNodes(".//td[@class='property-name']")[i].InnerText == "Yerləşmə yeri")
                                                     {
-                                                        Console.WriteLine("Yerləşdirmə");
                                                         announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
                                                         if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" m."))
                                                         {
@@ -194,7 +186,6 @@ namespace WebApi.Services.TapAz
                                                                     break;
                                                                 }
                                                             }
-                                                            Console.WriteLine("qesebe******************");
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" ş."))
                                                         {
@@ -213,7 +204,6 @@ namespace WebApi.Services.TapAz
                                                                     break;
                                                                 }
                                                             }
-                                                            Console.WriteLine("Seher******************");
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" r."))
                                                         {
@@ -227,12 +217,10 @@ namespace WebApi.Services.TapAz
                                                                     break;
                                                                 }
                                                             }
-                                                            Console.WriteLine("Rayon******************");
                                                         }
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" pr."))
                                                         {
                                                             announce.address = doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText;
-                                                            Console.WriteLine("Prospekt******************");
                                                         }
                                                     }
 
@@ -246,7 +234,6 @@ namespace WebApi.Services.TapAz
                                                 announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
                                                 announce.announce_date = DateTime.Now;
                                                 announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='name']").InnerText;
-                                                Console.WriteLine(proxies[x]);
 
                                                 ///////////////////IMAGES
                                                 var filePath = $@"TapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
@@ -269,12 +256,10 @@ namespace WebApi.Services.TapAz
                                                 var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
                                                 if (checkNumberRieltorResult > 0)
                                                 {
-                                                    Console.WriteLine("FIND IN RIELTOR bASE TAP.AZ");
 
                                                     announce.announcer = checkNumberRieltorResult;
                                                     announce.number_checked = true;
                                                     checkedNumber = true;
-                                                    Console.WriteLine("Checked");
 
                                                 }
 
@@ -283,7 +268,6 @@ namespace WebApi.Services.TapAz
 
                                                 if (checkedNumber == false)
                                                 {
-                                                    Console.WriteLine("Find in emlak-baza tAP.aZ");
 
                                                     //EMLAK - BAZASI
                                                     await _emlakBaza.CheckAsync(_httpClient, id, numberList);
@@ -295,7 +279,6 @@ namespace WebApi.Services.TapAz
 
                                 }// emlak if end
 
-                                Console.WriteLine(header.StatusCode);
                                 if (header.StatusCode.ToString() == "NotFound")
                                 {
                                     duration++;
@@ -310,7 +293,6 @@ namespace WebApi.Services.TapAz
                                 if (duration >= maxRequest)
                                 {
                                     model.last_id = (id - maxRequest);
-                                    Console.WriteLine("******** END **********");
                                     TelegramBotService.Sender("tap.az limited");
 
                                     isActive = false;
@@ -321,7 +303,6 @@ namespace WebApi.Services.TapAz
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine($"no connection tap.az {e.Message}");
                                 TelegramBotService.Sender($"no connection tap.az {e.Message}");
 
                                 count = 10;

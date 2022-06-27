@@ -2,14 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Helpers;
-using WebApi.Models;
 using WebApi.Repository;
-using WebApi.ViewModels;
 
 namespace WebApi.Services.EmlakAz
 {
@@ -84,9 +80,8 @@ namespace WebApi.Services.EmlakAz
                     return images;
                 });
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e);
             }
             return list;
         }

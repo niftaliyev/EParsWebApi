@@ -7,18 +7,14 @@ using Microsoft.OpenApi.Models;
 using System.Net;
 using System.Net.Http;
 using WebApi.Extensions;
-using WebApi.Helpers;
-using WebApi.Jobs;
 using WebApi.Proxy;
 using WebApi.Repository;
-using WebApi.Services;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakAz.Interfaces;
 using WebApi.Services.EmlakciAz;
 using WebApi.Services.EmlakciAz.Interfaces;
 using WebApi.Services.TapAz;
 using WebApi.Services.TapAz.Interfaces;
-using WebApi.Services.YeniEmlakAz;
 
 namespace WebApi
 {
@@ -75,7 +71,7 @@ namespace WebApi
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty;
+                //c.RoutePrefix = string.Empty;
             });
             
             app.UseHttpsRedirection();

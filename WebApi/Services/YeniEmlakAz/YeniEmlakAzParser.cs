@@ -1,15 +1,12 @@
 ﻿using HtmlAgilityPack;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
-using WebApi.Services.EmlakAz;
 
 namespace WebApi.Services.YeniEmlakAz
 {
@@ -57,9 +54,9 @@ namespace WebApi.Services.YeniEmlakAz
             int counter = 0;
 
 
-            if (!isActive)
+            if (model.isActive)
             {
-                if (model.isActive)
+                if (!isActive)
                 {
                     int x = 0;
                     int count = 0;
@@ -82,12 +79,10 @@ namespace WebApi.Services.YeniEmlakAz
                         Announce announce = new Announce();
                         try
                         {
-                            Console.WriteLine(model.site);
 
                             header = await httpClient.GetAsync($"{model.site}/elan/{++id}");
                             string url = header.RequestMessage.RequestUri.AbsoluteUri;
                             count++;
-                            Console.WriteLine(id);
                             var response = await httpClient.GetAsync(url);
                             if (header.IsSuccessStatusCode)
                             {
@@ -173,8 +168,7 @@ namespace WebApi.Services.YeniEmlakAz
                                                             announce.city_id = countryName.Value;
                                                             announce.address = countryName.Key;
                                                             countryCheck = false;
-                                                            Console.WriteLine(item.InnerText);
-                                                            Console.WriteLine(countryName.Key);
+
                                                             break;
                                                         }
                                                     }
@@ -243,8 +237,7 @@ namespace WebApi.Services.YeniEmlakAz
                                             delimiter = ",";
                                         }
                                         announce.mobile = numbers.ToString();
-                                        Console.WriteLine(numbers.ToString());
-                                        Console.WriteLine("----------------------------");
+
 
                                         announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='ad']").InnerText;
                                            
@@ -264,27 +257,22 @@ namespace WebApi.Services.YeniEmlakAz
                                         var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
                                         if (checkNumberRieltorResult > 0)
                                         {
-                                            Console.WriteLine("FIND IN RIELTOR BASE YENIEMLAK");
                                             announce.announcer = checkNumberRieltorResult;
                                             announce.number_checked = true;
                                             checkedNumber = true;
-                                            Console.WriteLine("Checked YENIEMLAK");
                                         }
                                         await unitOfWork.Announces.Create(announce);
                                         unitOfWork.Dispose();
 
                                         if (checkedNumber == false)
                                         {
-                                            Console.WriteLine("Find in emlak-baza YENIEMLAK");
                                             //EMLAK - BAZASI
                                             await emlakBaza.CheckAsync(httpClient, id, numberList);
-                                            Console.WriteLine("emlakbazaemlakbazaemlakbaza");
                                         }
                                     } //end if for text
                                     else
                                     {
                                         duration++;
-                                        Console.WriteLine(duration);
                                     }
                                     if (duration >= maxRequest)
                                     {
@@ -292,7 +280,6 @@ namespace WebApi.Services.YeniEmlakAz
                                         isActive = false;
                                         unitOfWork.ParserAnnounceRepository.Update(model);
                                         duration = 0;
-                                        Console.WriteLine("******** END **********");
                                         TelegramBotService.Sender($"yeniemlak.az limited");
 
                                         break;

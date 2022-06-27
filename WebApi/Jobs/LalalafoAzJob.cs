@@ -4,14 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApi.Services.ArendaAz;
+using WebApi.Services.LalafoAz;
 
 namespace WebApi.Jobs
 {
-    public class ArendaAzJob : IJob
+    public class LalalafoAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        public ArendaAzJob(IServiceScopeFactory serviceScopeFactory)
+        public LalalafoAzJob(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
         }
@@ -21,9 +21,9 @@ namespace WebApi.Jobs
             using var scope = _serviceScopeFactory.CreateScope();
             var provider = scope.ServiceProvider;
 
-            var arendaAzService = provider.GetRequiredService<ArendaAzParser>();
+            var lalafoAzService = provider.GetRequiredService<LalafoAzParser>();
 
-            await arendaAzService.ArendaAzPars();
+            await lalafoAzService.LalafoAzPars();
         }
     }
 }

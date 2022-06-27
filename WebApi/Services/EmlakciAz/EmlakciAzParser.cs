@@ -210,12 +210,10 @@ namespace WebApi.Services.EmlakciAz
                                         var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList.ToArray());
                                         if (checkNumberRieltorResult > 0)
                                         {
-                                            Console.WriteLine("FIND IN RIELTOR bASE emlakci.AZ");
 
                                             announce.announcer = checkNumberRieltorResult;
                                             announce.number_checked = true;
                                             checkedNumber = true;
-                                            Console.WriteLine("Checked");
 
                                         }
 
@@ -228,7 +226,6 @@ namespace WebApi.Services.EmlakciAz
                                         if (images != null)
                                         {
                                             announce.logo_images = JsonSerializer.Serialize(images);
-                                            Console.WriteLine("saved images emlakci");
                                         }
 
 
@@ -237,7 +234,6 @@ namespace WebApi.Services.EmlakciAz
 
                                         if (checkedNumber == false)
                                         {
-                                            Console.WriteLine("Find in emlak-baza emlakci.aZ");
 
                                             //EMLAK - BAZASI
                                             await _emlakBaza.CheckAsync(id, numberList.ToArray());
@@ -249,13 +245,11 @@ namespace WebApi.Services.EmlakciAz
                             }
                             else
                             {
-                                Console.WriteLine("Empty");
                                 duration++;
                             }
                             if (duration >= maxRequest)
                             {
                                 model.last_id = (id - maxRequest);
-                                Console.WriteLine("******** END emlakci **********");
                                 isActive = false;
                                 unitOfWork.ParserAnnounceRepository.Update(model);
                                 duration = 0;
@@ -264,7 +258,6 @@ namespace WebApi.Services.EmlakciAz
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(e.Message);
                             TelegramBotService.Sender($"end catch {e.Message}");
 
                         }

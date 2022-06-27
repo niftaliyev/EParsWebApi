@@ -59,7 +59,6 @@ namespace WebApi.Services.TapAz
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
                 }
                 return images;
 
