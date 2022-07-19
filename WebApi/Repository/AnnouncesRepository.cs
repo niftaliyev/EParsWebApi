@@ -68,5 +68,14 @@ namespace WebApi.Repository
                 connection.Execute(uQuery, updateViewModel);
             });
         }
+
+        public Task ArendaAzUpdateAnnouncerAsync(ArendaAzAnnouncerUpdateVM updateViewModel)
+        {
+            return Task.Run(() =>
+            {
+                string uQuery = "UPDATE announces SET announcer = @Announcer , number_checked = true WHERE id = @Id";
+                connection.Execute(uQuery, updateViewModel);
+            });
+        }
     }
 }

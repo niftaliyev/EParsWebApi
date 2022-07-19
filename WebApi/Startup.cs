@@ -13,8 +13,14 @@ using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakAz.Interfaces;
 using WebApi.Services.EmlakciAz;
 using WebApi.Services.EmlakciAz.Interfaces;
+using WebApi.Services.EmlaktapAz;
+using WebApi.Services.EvinAz;
+using WebApi.Services.EvinAz.Interfaces;
 using WebApi.Services.TapAz;
 using WebApi.Services.TapAz.Interfaces;
+using WebApi.Services.UcuzTapAz;
+using WebApi.Services.UnvanAz;
+using WebApi.Services.VipEmlakAz;
 
 namespace WebApi
 {
@@ -46,6 +52,12 @@ namespace WebApi
             services.AddTransient<ITypeOfProperty, TypeOfProperty>();
             services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
             services.AddTransient<ITypeOfPropertyEmlakciAz, TypeOfPropertyEmlakciAz>();
+            services.AddTransient<TypeOfPropertyUcuzTapAz>();
+            services.AddTransient<TypeOfPropertyEmlaktapAz>();
+            services.AddTransient<ITypeOfPropertyUnvanAz,TypeOfPropertyUnvanAz>();
+            services.AddTransient<ITypeOfPropertyEvinAz,TypeOfPropertyEvinAz>();
+            services.AddTransient<ITypeOfPropertyVipEmlakAz,TypeOfPropertyVipEmlakAz>();
+
             services.AddParsers();
             services.AddJobs();
             services.AddHttpClient<ProxysHttpClient>().

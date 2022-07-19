@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApi.Jobs;
+using WebApi.Jobs.ArendaAz;
 
 namespace WebApi.Extensions
 {
@@ -25,6 +26,18 @@ namespace WebApi.Extensions
             services.AddHostedService<LalafoAzScheduleService>();
             services.AddTransient<DashinmazEmlakJob>();
             services.AddHostedService<DashinmazEmlakAzScheduleService>();
+            services.AddTransient<UcuzTapAzJob>();
+            services.AddHostedService<UcuzTapAzScheduleService>();
+            services.AddTransient<EmlaktapAzJob>();
+            services.AddTransient<EmlaktapAzScheduleService>();
+            services.AddTransient<UnvanAzJob>();
+            services.AddTransient<UnvanAzScheduleService>();
+            services.AddTransient<EvinAzJob>();
+            services.AddTransient<EvinAzScheduleService>();
+            services.AddTransient<VipEmlakAzJob>();
+            services.AddTransient<VipEmlakAzScheduleService>();
+            services.AddTransient<ArendaAzJob>();
+            services.AddTransient<ArendaAzScheduleService>();
             return services;
         }
     }

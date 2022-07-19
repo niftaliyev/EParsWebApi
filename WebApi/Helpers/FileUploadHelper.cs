@@ -15,7 +15,7 @@ namespace WebApi.Helpers
     {
         public async Task DownloadImageAsync(string directoryPath, string fileName, Uri uri, HttpClient httpClient)
         {
-            await DownloadImageS3Async(directoryPath,fileName,uri,httpClient);
+            await DownloadImagesLocalAsync(directoryPath,fileName,uri,httpClient);
 
             //await Task.Run(() =>
             //{
@@ -40,6 +40,26 @@ namespace WebApi.Helpers
             //});
         }
 
+        public async Task DownloadImagesLocalAsync(string directoryPath, string fileName, Uri uri, HttpClient httpClient)
+        {
+
+            await Task.Run(async () => {
+
+                var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                var fileExtension = Path.GetExtension(uriWithoutQuery);
+
+                var path = Path.Combine(directoryPath, $"{fileName}{fileExtension}");
+
+                if (!Directory.Exists(directoryPath))
+                    Directory.CreateDirectory(directoryPath);
+
+
+                var imageBytes = await httpClient.GetByteArrayAsync(uri);
+                await File.WriteAllBytesAsync(path, imageBytes);
+
+            });
+        }
+
         public async Task DownloadImageS3Async(string directoryPath, string fileName, Uri uri, HttpClient httpClient)
         {
             await Task.Run(async () =>
@@ -53,7 +73,7 @@ namespace WebApi.Helpers
                     var imageBytes = await httpClient.GetByteArrayAsync(uri);
 
                     var s3 = new AmazonS3Client("AKIAXGTYXE7SOLQTSWUO", "j4+pHSZIFdIE/a8yXd3RaFXuzkDDjAx+xmQa0wRN", RegionEndpoint.EUCentral1);
-
+                  
                     using (MemoryStream memoryStream = new MemoryStream(imageBytes))
                     {
                         await s3.PutObjectAsync(new Amazon.S3.Model.PutObjectRequest

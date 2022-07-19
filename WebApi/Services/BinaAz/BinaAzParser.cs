@@ -187,6 +187,7 @@ namespace WebApi.Services.BinaAz
                                                     if (item.InnerText.Contains(metro.name))
                                                     {
                                                         announce.metro_id = metro.id;
+                                                        
                                                         break;
                                                     }
                                                 }

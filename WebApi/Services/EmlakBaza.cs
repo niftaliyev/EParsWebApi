@@ -29,11 +29,12 @@ namespace WebApi.Services
                         values.Add("number", number);
 
                         var content = new FormUrlEncodedContent(values);
-
+                        
                         var response = await httpClient.PostAsync("https://emlak-bazasi.com/search/agency/", content);
                         if (response != null)
                         {
                             var responseString = await response.Content.ReadAsStringAsync();
+                        
 
                             if (!string.IsNullOrEmpty(responseString))
                             {

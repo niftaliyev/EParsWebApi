@@ -6,7 +6,10 @@ namespace WebApi.Services
 {
     public static class TelegramBotService
     {
-        public static TelegramBotClient Client = new TelegramBotClient("2093531413:AAHMSMt0m3GSpM8svr6_hTsTF4OZIU_JGcI");
+       // public static TelegramBotClient Client = new TelegramBotClient("2093531413:AAHMSMt0m3GSpM8svr6_hTsTF4OZIU_JGcI");
+
+        //EmlakCrawler
+        public static TelegramBotClient Client = new TelegramBotClient("5486861849:AAHhXVeEzx5gS6yeCAHUuRXD1EXD7VBQplc");
         public static HashSet<long> chatIds = new HashSet<long>();
 
         [Obsolete]
@@ -24,7 +27,7 @@ namespace WebApi.Services
             if (text.ToLower().Trim() == "stop")
             {
                 chatIds.Remove(id);
-                Client.SendTextMessageAsync(id, "siz qrupdan ayrildiniz");
+                Client.SendTextMessageAsync(id, "Siz qrupdan ayrıldınız");
 
             }
 
@@ -34,7 +37,7 @@ namespace WebApi.Services
                 if (text.Trim() == "123")
                 {
                     chatIds.Add(id);
-                    Client.SendTextMessageAsync(id, "siz qrupa qosuldunuz");
+                    Client.SendTextMessageAsync(id, "Siz qrupa qoçuldunuz");
                 }
                
             }
@@ -42,9 +45,9 @@ namespace WebApi.Services
             else
             {
                 if (text.Trim() == "123") 
-                    Client.SendTextMessageAsync(id, "siz artiq qrupda varsiz yeniden qosulmaqa ehtiac yoxdur !!!");
+                    Client.SendTextMessageAsync(id, "Siz qrupda varsınız , yenidən qoşulmağa ehtiyac yoxdur !");
                 else
-                    Client.SendTextMessageAsync(id, "yazdiginiz sehvdir !!!");
+                    Client.SendTextMessageAsync(id, "Yazdığınız səhvdir !");
             }
         }
 
