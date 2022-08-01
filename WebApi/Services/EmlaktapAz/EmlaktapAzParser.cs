@@ -322,7 +322,7 @@ namespace WebApi.Services.EmlaktapAz
                                                     var thumbLink = doc.DocumentNode.SelectNodes(".//div[@class='fotorama']//a//img")[0].Attributes["src"].Value;
                                                     var abosulteLink = $"https://emlaktap.az{thumbLink}";
 
-                                                    var uri = new Uri(abosulteLink););
+                                                    var uri = new Uri(abosulteLink);
 
                                                     var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                                                     var fileExtension = Path.GetExtension(uriWithoutQuery);
