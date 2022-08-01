@@ -37,7 +37,7 @@ namespace WebApi.Services
                 if (text.Trim() == "123")
                 {
                     chatIds.Add(id);
-                    Client.SendTextMessageAsync(id, "Siz qrupa qoçuldunuz");
+                    Client.SendTextMessageAsync(id, "Siz qrupa qoşuldunuz");
                 }
                
             }

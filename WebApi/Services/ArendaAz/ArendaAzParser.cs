@@ -24,10 +24,13 @@ namespace WebApi.Services.ArendaAz
         private readonly ITypeOfPropertyArendaAz _propertyType;
         private readonly ArendaAzEmlakBazaWithProxy _emlakBaza;
         private readonly ArendaAzImageUploader _imageUploader;
-        const int maxRequest = 10;
+        private readonly HttpClientCreater clientCreater;
+
+        static string[] proxies = SingletonProxyServersIp.Instance;
         public ArendaAzParser(HttpClient httpClient, UnitOfWork unitOfWork, ArendaAzSettlementNames settlementNames
                                , ArendaAzMetroNames metroNames, ITypeOfPropertyArendaAz propertyType, ArendaAzEmlakBazaWithProxy emlakBaza
-                                , ArendaAzImageUploader imageUploader)
+                                , ArendaAzImageUploader imageUploader,
+                                    HttpClientCreater clientCreater)
         {
             _httpClient = httpClient;
             _unitOfWork = unitOfWork;
@@ -62,8 +65,7 @@ namespace WebApi.Services.ArendaAz
 
                     var announceLinks = doc.DocumentNode.SelectNodes(".//ul[@class='a_netice full elan_list results_list_']//li//a");
                     var announceDates = doc.DocumentNode.SelectNodes(".//ul[@class='a_netice full elan_list results_list_']//li//a//span[@class='elan_box_date']");
-                    var announceIds = doc.DocumentNode.SelectNodes(".//ul[@class='a_netice full elan_list results_list_']//li");
-                    int id = Int32.Parse(doc.DocumentNode.SelectNodes(".//ul[@class='a_netice full elan_list results_list_']//li")[0].GetAttributeValue("id", "").ToString().Replace("elan_", ""));
+                    
                     var model = _unitOfWork.InfoSiteRepository.GetBySiteName("https://arenda.az");
 
 
@@ -81,7 +83,7 @@ namespace WebApi.Services.ArendaAz
                             if (y >= 350)
                                 y = 0;
 
-                            // _httpClient = clientCreater.Create(proxies[y]);
+                            _httpClient = clientCreater.Create(proxies[y]);
                             count = 0;
                         }
 
@@ -344,7 +346,7 @@ namespace WebApi.Services.ArendaAz
                         }
                         catch (Exception e)
                         {
-                            TelegramBotService.Sender($"Error : {e}");
+                            TelegramBotService.Sender($"Error : {e.Message}");
                             isActive = false;
                             break;
                         }
