@@ -38,6 +38,7 @@ namespace WebApi.Services.DashinmazEmlak
 
         public async Task DashinmazEmlakPars()
         {
+            //
             var model = unitOfWork.ParserAnnounceRepository.GetBySiteName("https://dashinmazemlak.az");
 
             if (!isActive)
