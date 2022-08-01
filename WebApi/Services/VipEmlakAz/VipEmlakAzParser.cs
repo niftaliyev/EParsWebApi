@@ -21,7 +21,6 @@ namespace WebApi.Services.VipEmlakAz
         private readonly ITypeOfPropertyVipEmlakAz _propertyType;
         private readonly VipEmlakAzMetroNames _metrosNames;
         private readonly VipEmlakAzSettlementNames _settlementNames;
-        ////private readonly EmlaktapAzMarksNames _marksNames;
         private readonly VipEmlakAzImageUploader _imageUploader;
         static string[] proxies = SingletonProxyServersIp.Instance;
         private readonly HttpClientCreater clientCreater;
@@ -34,7 +33,6 @@ namespace WebApi.Services.VipEmlakAz
                                ITypeOfPropertyVipEmlakAz propertyType,
                                VipEmlakAzSettlementNames settlementNames,
                                VipEmlakAzMetroNames metrosNames,
-                               ////EmlaktapAzMarksNames marksNames,
                                VipEmlakAzImageUploader imageUploader,
                                HttpClientCreater httpClientCreater
                                )
@@ -45,7 +43,6 @@ namespace WebApi.Services.VipEmlakAz
             _propertyType = propertyType;
             _settlementNames = settlementNames;
             _metrosNames = metrosNames;
-            ////_marksNames = marksNames;
             _imageUploader = imageUploader;
             clientCreater = httpClientCreater;
         }

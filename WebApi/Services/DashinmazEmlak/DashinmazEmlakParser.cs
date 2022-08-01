@@ -46,6 +46,7 @@ namespace WebApi.Services.DashinmazEmlak
                 {
                     try
                     {
+
                         var id = model.last_id;
 
                         isActive = true;

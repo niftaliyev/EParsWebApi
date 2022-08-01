@@ -76,7 +76,7 @@ namespace WebApi.Services
 
                                         if (i == (numbers.Length - 1))
                                         {
-                                            await unitOfWork.Announces.ArendaAzUpdateAnnouncerAsync(new ArendaAzAnnouncerUpdateVM { Id = id, Announcer = 2 });
+                                            await unitOfWork.Announces.ArendaAzUpdateAnnouncerAsync(new ArendaAzAnnouncerUpdateVM { Id = id, Announcer = 1 });
 
                                         }
 

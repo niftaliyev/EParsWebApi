@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace WebApi.Jobs.ArendaAz
 {
-    public class ArendaScheduleService : JobScheduleService<ArendaAzJob>
+    public class ArendaAzScheduleService : JobScheduleService<ArendaAzJob>
     {
-        public ArendaScheduleService(IServiceProvider serviceProvider) : base(serviceProvider)
+        public ArendaAzScheduleService(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
         protected override TriggerBuilder ConfigureTrigger(TriggerBuilder triggerBuilder)

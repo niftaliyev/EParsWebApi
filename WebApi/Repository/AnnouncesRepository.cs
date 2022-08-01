@@ -77,5 +77,23 @@ namespace WebApi.Repository
                 connection.Execute(uQuery, updateViewModel);
             });
         }
+
+        public async Task<bool> IsAnnounceValid(int announceCode)
+        {
+            try
+            {
+                string query = $"SELECT COUNT(*) FROM announces WHERE parser_site = 'https://arenda.az' and original_id = @announceCode";
+                var count = await connection.ExecuteScalarAsync<long>(query, new { announceCode });
+                // return connection.Query<ParserAnnounce>(query, new { announceCode }).First();
+
+                return count == 0 ? false : true;
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+
+        }
     }
 }

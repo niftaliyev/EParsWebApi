@@ -15,13 +15,12 @@ namespace WebApi.Services.EvinAz
     public class EvinAzParser
     {
         private HttpClient _httpClient;
-        private readonly EmlakBaza _emlakBaza;
+        private readonly EmlakBazaWithProxy _emlakBaza;
         HttpResponseMessage header;
         private readonly UnitOfWork _unitOfWork;
         private readonly ITypeOfPropertyEvinAz _propertyType;
         private readonly EvinAzMetroNames _metrosNames;
         private readonly EvinAzSettlementNames _settlementNames;
-        ////private readonly EmlaktapAzMarksNames _marksNames;
         private readonly EvinAzImageUploader _imageUploader;
         static string[] proxies = SingletonProxyServersIp.Instance;
         private readonly HttpClientCreater clientCreater;
@@ -30,11 +29,10 @@ namespace WebApi.Services.EvinAz
 
         public EvinAzParser(HttpClient httpClient,
                                 UnitOfWork unitOfWork,
-                                EmlakBaza emlakBaza,
+                                EmlakBazaWithProxy emlakBaza,
                                 ITypeOfPropertyEvinAz propertyType,
                                 EvinAzSettlementNames settlementNames,
                                 EvinAzMetroNames metrosNames,
-                                ////EmlaktapAzMarksNames marksNames,
                                 EvinAzImageUploader imageUploader,
                                 HttpClientCreater httpClientCreater
                                )
@@ -43,9 +41,9 @@ namespace WebApi.Services.EvinAz
             _unitOfWork = unitOfWork;
             _emlakBaza = emlakBaza;
             _propertyType = propertyType;
-            //_settlementNames = settlementNames;
-            //_metrosNames = metrosNames;
-            ////_marksNames = marksNames;
+            _settlementNames = settlementNames;
+            _metrosNames = metrosNames;
+            //_marksNames = marksNames;
             _imageUploader = imageUploader;
             clientCreater = httpClientCreater;
         }
@@ -103,6 +101,7 @@ namespace WebApi.Services.EvinAz
                                     announce.announce_date = DateTime.Now;
                                     announce.parser_site = model.site;
                                     announce.original_id = id;
+                                    announce.original_date = doc.DocumentNode.SelectSingleNode("/html/body/div[7]/div[2]/div/div[3]/div[2]/div[2]/div[2]/div[3]/span[2]").InnerText.Trim();
 
                                     var text = doc.DocumentNode.SelectSingleNode(".//div[@class='bg-white p-3 mb-3']//p").InnerText;
 
@@ -286,7 +285,7 @@ namespace WebApi.Services.EvinAz
                                     {
 
                                         //EMLAK - BAZASI
-                                        await _emlakBaza.CheckAsync(_httpClient, id, numberList);
+                                        await _emlakBaza.CheckAsync(id, numberList);
                                     }
 
                                 }
@@ -299,7 +298,7 @@ namespace WebApi.Services.EvinAz
                                 if (duration >= maxRequest)
                                 {
                                     model.last_id = (id - maxRequest);
-                                    //TelegramBotService.Sender("unvan.az limited");
+                                    TelegramBotService.Sender("unvan.az limited");
 
                                     isActive = false;
                                     _unitOfWork.ParserAnnounceRepository.Update(model);
@@ -310,7 +309,7 @@ namespace WebApi.Services.EvinAz
                             }
                             catch (Exception e)
                             {
-                                //TelegramBotService.Sender($"no connection unvan.az {e.Message}");
+                                TelegramBotService.Sender($"no connection unvan.az {e.Message}");
 
                                 count = 10;
                             }
@@ -319,7 +318,7 @@ namespace WebApi.Services.EvinAz
                     catch (Exception e)
                     {
 
-                        //TelegramBotService.Sender($"end catch unvan.az {e.Message}");
+                        TelegramBotService.Sender($"end catch unvan.az {e.Message}");
                     }
                 }
             }

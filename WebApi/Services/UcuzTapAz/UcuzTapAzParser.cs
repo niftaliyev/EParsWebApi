@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
@@ -165,7 +166,21 @@ namespace WebApi.Services.UcuzTapAz
                                                         //Check again
                                                         else if (allPropertiesKeys[i].InnerText == "Rayon:")
                                                         {
-                                                            if (allPropertiesValues[i].InnerText.EndsWith("r."))
+                                                            if (allPropertiesValues[i].InnerText.EndsWith("q."))
+                                                            {
+                                                                var settlements = _settlementNames.GetSettlementsNamesAll();
+
+                                                                foreach (var settlement in settlements)
+                                                                {
+                                                                    if (settlement.Key.ToLower().Contains(allPropertiesValues[i].InnerText.Split(" q.")[0].ToLower()))
+                                                                    {
+                                                                        announce.settlement_id = settlement.Value;
+                                                                        break;
+                                                                    }
+                                                                }
+
+                                                            }
+                                                            else if (allPropertiesValues[i].InnerText.EndsWith("r."))
                                                             {
                                                                 var regions = _unitOfWork.CitiesRepository.GetAllRegions();
                                                                 foreach (var region in regions)
@@ -347,11 +362,12 @@ namespace WebApi.Services.UcuzTapAz
                                                     var filePath = $@"UcuzTapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
 
 
-                                                    var images = await _imageUploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                                    var images =  _imageUploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
                                                     var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
                                                     var fileExtension = Path.GetExtension(uriWithoutQuery);
 
                                                     announce.cover = $@"UcuzTapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
+                                                    announce.logo_images = JsonSerializer.Serialize(await images);
 
                                                     await _unitOfWork.Announces.Create(announce);
                                                     _unitOfWork.Dispose();
@@ -392,7 +408,7 @@ namespace WebApi.Services.UcuzTapAz
                                 if (duration >= maxRequest)
                                 {
                                     model.last_id = (id - maxRequest);
-                                    //TelegramBotService.Sender("tap.az limited");
+                                    TelegramBotService.Sender("ucuztap.az limited");
 
                                     isActive = false;
                                     _unitOfWork.ParserAnnounceRepository.Update(model);
@@ -403,15 +419,14 @@ namespace WebApi.Services.UcuzTapAz
                             }
                             catch (Exception e)
                             {
-
-                                throw;
+                                TelegramBotService.Sender($"ucuztap.az exception {e}");
                             }
                         }
                     }
                     catch (Exception e)
                     {
 
-                        throw;
+                        TelegramBotService.Sender($"ucuztap.az no connection  {e}");
                     }
                 }
 

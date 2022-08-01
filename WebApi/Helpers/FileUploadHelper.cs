@@ -15,7 +15,7 @@ namespace WebApi.Helpers
     {
         public async Task DownloadImageAsync(string directoryPath, string fileName, Uri uri, HttpClient httpClient)
         {
-            await DownloadImagesLocalAsync(directoryPath,fileName,uri,httpClient);
+            await DownloadImageS3Async(directoryPath,fileName,uri,httpClient);
 
             //await Task.Run(() =>
             //{
