@@ -2,17 +2,19 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
 using WebApi.Services.TapAz.Interfaces;
+using WebApi.ViewModels;
 
 namespace WebApi.Services.TapAz
 {
     public class TapAzParser
     {
-        private readonly EmlakBaza _emlakBaza;
+        private readonly EmlakBazaWithProxy _emlakBaza;
         private readonly TapAzImageUploader _uploader;
         private readonly HttpClientCreater clientCreater;
         private static bool isActive = false;
@@ -24,17 +26,19 @@ namespace WebApi.Services.TapAz
 
         private HttpClient _httpClient;
         HttpResponseMessage header;
-        public int maxRequest = 200;
+        public int maxRequest = 250;
         static string[] proxies = SingletonProxyServersIp.Instance;
 
-        public TapAzParser(EmlakBaza emlakBaza, 
-            TapAzImageUploader uploader, 
-            HttpClientCreater clientCreater, 
-            UnitOfWork unitOfWork,
-            ITypeOfPropertyTapAz typeOfPropertyTapAz,
-            TapAzMetrosNames metrosNames,
-            TapAzSettlementsNames settlementsNames,
-            TapAzRegionsNames regions)
+        public TapAzParser(EmlakBazaWithProxy emlakBaza,
+                            TapAzImageUploader uploader,
+                            HttpClientCreater clientCreater,
+                            UnitOfWork unitOfWork,
+                            ITypeOfPropertyTapAz typeOfPropertyTapAz,
+                            TapAzMetrosNames metrosNames,
+                            TapAzSettlementsNames settlementsNames,
+                            TapAzRegionsNames regions
+                           // HttpClient httpClient
+                           )
         {
             this._emlakBaza = emlakBaza;
             _uploader = uploader;
@@ -44,8 +48,10 @@ namespace WebApi.Services.TapAz
             this.metrosNames = metrosNames;
             this.settlementsNames = settlementsNames;
             this.regions = regions;
-            _httpClient = clientCreater.Create(proxies[0]);
             //_httpClient = httpClient;
+            Random rnd = new Random();
+            _httpClient = this.clientCreater.Create(proxies[rnd.Next(0, 99)]);
+
         }
         public async Task TapAzPars()
         {
@@ -75,51 +81,72 @@ namespace WebApi.Services.TapAz
                             }
                             try
                             {
+                                id++;
+                                var searchViewModel = new AnnounceSearchViewModel
+                                {
+                                    ParserSite = model.site,
+                                    OriginalId = id
+                                };
 
-                                Uri myUri = new Uri($"{model.site}/elanlar/-/-/{++id}", UriKind.Absolute);
-                                header = await _httpClient.GetAsync(myUri);
-                                var url = header.RequestMessage.RequestUri.AbsoluteUri;
+                                if (await unitOfWork.Announces.IsAnnounceValidAsync(searchViewModel))
+                                {
+                                    continue;
+                                };
+
+                                Uri myUri = new Uri($"{model.site}/elanlar/dasinmaz-emlak/menziller/{id}", UriKind.Absolute);
+
+                                var response = await _httpClient.GetAsync(myUri);
+                                // var url = header.RequestMessage.RequestUri.AbsoluteUri;
                                 count++;
                                 HtmlDocument doc = new HtmlDocument();
 
-                                if (header.RequestMessage.RequestUri.ToString().StartsWith("https://tap.az/elanlar/dasinmaz-emlak/"))
+                                if (response.IsSuccessStatusCode)
                                 {
-                                    var response = await _httpClient.GetAsync(url);
-
-
-                                    if (response.IsSuccessStatusCode)
+                                    duration = 0;
+                                    if (response.RequestMessage.RequestUri.ToString().StartsWith("https://tap.az/elanlar/dasinmaz-emlak/"))
                                     {
                                         var html = await response.Content.ReadAsStringAsync();
                                         if (!string.IsNullOrEmpty(html))
                                         {
                                             doc.LoadHtml(html);
-                                            Announce announce = new Announce();
 
-                                            if (doc.DocumentNode.SelectSingleNode(".//a[@class='phone']") != null)
+                                            if (doc.DocumentNode.SelectSingleNode(".//*[@id='show-phones']") != null || doc.DocumentNode.SelectSingleNode(".//div[@class='shop-contact']//a[@class='shop-phones--number']//span") != null)
                                             {
+                                                Announce announce = new Announce();
                                                 if (doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']") != null)
                                                     announce.price = Int32.Parse(doc.DocumentNode.SelectSingleNode(".//span[@class='price-val']").InnerText.Replace(" ", ""));
-                                                
-                                                //if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
-                                                //announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
+
+                                                if (doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1") != null)
+                                                    announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='title-container']//h1").InnerText;
+
                                                 if (doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p") != null)
                                                     announce.text = doc.DocumentNode.SelectSingleNode(".//div[@class='lot-text']//p").InnerText;
 
-                                                string mobileregex = doc.DocumentNode.SelectSingleNode(".//a[@class='phone']").InnerText;
 
-                                                if (mobileregex != null)
+                                                //var phoneUrl = $"{model.site}/ads/{id}/phones";
+
+                                                var phone = doc.DocumentNode.SelectNodes(".//div[@class='number']")[1];
+                                                if (phone == null)
+                                                {
+                                                    throw new Exception("nomre yoxdur");
+                                                }
+                                                StringBuilder mobile = new StringBuilder(phone.InnerText);
+
+
+                                                for (int i = 0; i < mobile.Length; i++)
                                                 {
                                                     var charsToRemove = new string[] { "(", ")", "-", ".", " " };
                                                     foreach (var c in charsToRemove)
                                                     {
-                                                        mobileregex = mobileregex.Replace(c, string.Empty);
+                                                        mobile = mobile.Replace(c, string.Empty);
                                                     }
 
-                                                    if (mobileregex != null)
-                                                        announce.mobile = mobileregex;
-
-
                                                 }
+                                                announce.mobile = mobile.ToString();
+                                            
+
+
+
 
                                                 if (doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[2] != null)
                                                 {
@@ -190,7 +217,7 @@ namespace WebApi.Services.TapAz
                                                         else if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText.EndsWith(" ş."))
                                                         {
                                                             var cities = unitOfWork.CitiesRepository.GetAll();
-                                                            
+
                                                             foreach (var item in cities)
                                                             {
                                                                 if (doc.DocumentNode.SelectNodes(".//td[@class='property-value']")[i].InnerText == item.name)
@@ -232,6 +259,7 @@ namespace WebApi.Services.TapAz
                                                 announce.original_id = id;
                                                 announce.parser_site = model.site;
                                                 announce.view_count = Int32.Parse(doc.DocumentNode.SelectNodes(".//div[@class='lot-info']/p")[1].InnerText.Replace("Baxışların sayı: ", ""));
+
                                                 announce.announce_date = DateTime.Now;
                                                 announce.name = doc.DocumentNode.SelectSingleNode(".//div[@class='name']").InnerText;
 
@@ -249,52 +277,53 @@ namespace WebApi.Services.TapAz
 
                                                 ////////////
 
-                                                duration = 0;
+
 
                                                 bool checkedNumber = false;
-                                                var numberList = mobileregex.Split(',');
-                                                var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                                var numberList = mobile.ToString().Split(',');
+                                                var checkNumberRieltorResult =await unitOfWork.CheckNumberRepository.CheckNumberForRieltorAsync(numberList);
                                                 if (checkNumberRieltorResult > 0)
                                                 {
-
                                                     announce.announcer = checkNumberRieltorResult;
                                                     announce.number_checked = true;
                                                     checkedNumber = true;
-
                                                 }
 
-                                                await unitOfWork.Announces.Create(announce);
-                                                unitOfWork.Dispose();
+                                                int lastAnnounceId = await unitOfWork.Announces.CreateAsync(announce);
 
-                                                if (checkedNumber == false) 
+
+
+                                                if (checkedNumber == false)
                                                 {
 
                                                     //EMLAK - BAZASI
-                                                    await _emlakBaza.CheckAsync(_httpClient, id, numberList);
+                                                    await _emlakBaza.CheckAsync(lastAnnounceId, numberList);
                                                 }
+
+                                                unitOfWork.Dispose();
+                                            }
+                                            else if (doc.DocumentNode.SelectSingleNode(".//div[@class='lot-status--waiting-for-approval']") != null)
+                                            {
+                                                TelegramBotService.Sender($"tap.az announces waiting for acception");
+                                                model.last_id = (id - 1);
+                                                isActive = false;
+                                                unitOfWork.ParserAnnounceRepository.Update(model);
+                                                break;
                                             }
 
                                         }
                                     }
 
                                 }// emlak if end
-
-                                if (header.StatusCode.ToString() == "NotFound")
+                                else
                                 {
                                     duration++;
                                 }
-                                if (header.StatusCode.ToString() == "OK")
-                                {
-                                    if (doc.DocumentNode.SelectSingleNode(".//a[@class='phone']") == null)
-                                    {
-                                        duration++;
-                                    }
-                                }
+
                                 if (duration >= maxRequest)
                                 {
                                     model.last_id = (id - maxRequest);
                                     TelegramBotService.Sender("tap.az limited");
-
                                     isActive = false;
                                     unitOfWork.ParserAnnounceRepository.Update(model);
                                     duration = 0;

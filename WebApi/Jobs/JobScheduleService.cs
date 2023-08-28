@@ -3,6 +3,7 @@ using Quartz;
 using Quartz.Impl;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ namespace WebApi.Jobs
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+          
             IScheduler scheduler = await StdSchedulerFactory.GetDefaultScheduler(cancellationToken);
 
             scheduler.JobFactory = new DefaultJobFactory(_serviceProvider);
@@ -35,12 +37,13 @@ namespace WebApi.Jobs
                 .Create<TJob>()
                 .WithIdentity(typeof(TJob).Name, DEFAULT_JOB_GROUP))
                 .Build();
-
+           
             var trigger = ConfigureTrigger(TriggerBuilder
                 .Create()
                 .WithIdentity($"{typeof(TJob).Name}-trigger", DEFAULT_TRIGGER_GROUP))
                 .Build();
 
+            
             await scheduler.ScheduleJob(jobDetail, trigger);
         }
 

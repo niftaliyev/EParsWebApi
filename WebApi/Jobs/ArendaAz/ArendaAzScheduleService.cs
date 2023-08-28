@@ -13,7 +13,7 @@ namespace WebApi.Jobs.ArendaAz
         }
         protected override TriggerBuilder ConfigureTrigger(TriggerBuilder triggerBuilder)
         {
-            return triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInHours(5).RepeatForever());
+            return triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInMinutes(2).RepeatForever());
         }
     }
 }

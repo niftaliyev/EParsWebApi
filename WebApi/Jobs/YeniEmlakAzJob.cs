@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using WebApi.Services;
 using WebApi.Services.YeniEmlakAz;
 
 namespace WebApi.Jobs
 {
+    [DisallowConcurrentExecution]
     public class YeniEmlakAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -18,12 +18,25 @@ namespace WebApi.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var provider = scope.ServiceProvider;
+            try
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var provider = scope.ServiceProvider;
 
-            var recordService = provider.GetRequiredService<YeniEmlakAzParser>();
+                var recordService = provider.GetRequiredService<YeniEmlakAzParser>();
 
-            await recordService.YeniEmlakAzPars();
+
+                await recordService.ParseSite();
+
+
+            }
+            catch (Exception e)
+            {
+
+                TelegramBotService.Sender($"cannot enter parser --> yeniemlak.az -- {e.Message}");
+
+            }
+          
         }
     }
 }

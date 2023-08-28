@@ -3,6 +3,8 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using WebApi.Models;
@@ -22,16 +24,16 @@ namespace WebApi.Repository
             var query = "select * from announces";
             return connection.Query<Announce>(query);
         }
-        public async Task<int> Create(Announce announce)
+        public async Task<int> CreateAsync(Announce announce)
         {
-            string uQuery = "INSERT INTO announces (original_id, mobile,name" +
+            string query = "INSERT INTO announces (original_id, mobile,name" +
                 ",price,cover,parser_site" +
                 ",images,logo_images,room_count" +
                 ",rent_type,property_type,announce_type" +
                 ",region_id,settlement_id,metro_id " +
                 ",apartment_id,mark,address,google_map," +
                 "floor_count,current_floor,space,document" +
-                ",communal,text,view_count,announcer,announce_date,original_date,repair,city_id,number_checked)"
+                ",communal,text,view_count,announcer,announce_date,original_date,repair,city_id,number_checked,kredit)"
 
                 + "VALUES(@original_id,@mobile,@name" +
                 ",@price,@cover,@parser_site" +
@@ -40,9 +42,10 @@ namespace WebApi.Repository
                 ",@region_id,@settlement_id,@metro_id" +
                 ",@apartment_id,@mark,@address,@google_map" +
                 ",@floor_count,@current_floor,@space,@document" +
-                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date,@repair,@city_id,@number_checked); SELECT last_insert_id();";
-                var lastId = await connection.ExecuteScalarAsync<long>(uQuery, announce);
-                return ((int)lastId);
+                ",@communal,@text,@view_count,@announcer,@announce_date,@original_date,@repair,@city_id,@number_checked,@kredit); SELECT last_insert_id();";
+
+            var lastId = await connection.ExecuteScalarAsync<long>(query, announce);
+            return ((int)lastId);
         }
         public Announce GetById(int id)
         {
@@ -51,22 +54,42 @@ namespace WebApi.Repository
 
         public async Task UpdateAsync(AnnounceImageUpdateViewModel updateViewModel)
         {
-             await Task.Run(() =>
-             {
-                 string uQuery = "UPDATE announces SET images = @Images WHERE id = @LastId";
-                 connection.Execute(uQuery, updateViewModel);
-             });
+            await Task.Run(() =>
+            {
+                string uQuery = "UPDATE announces SET images = @Images WHERE id = @LastId";
+                connection.Execute(uQuery, updateViewModel);
+            });
 
         }
 
-        public Task UpdateAnnouncerAsync (AnnounceAnnouncerUpdateViewModel updateViewModel)
+        public async Task<IEnumerable<int>> GetAnnouncesByMobileListAsync(string[] mobileList)
         {
-            return Task.Run(() =>
-            { 
-                string uQuery = "UPDATE announces SET announcer = @Announcer , number_checked = true WHERE original_id = @OriginalId";
+            
+            StringBuilder sb = new();
+            for (int i = 0; i < mobileList.Length; i++)
+            {
+                if (mobileList.Length > 1 && mobileList.Length - 1 != i)
+                {
+                    sb.AppendLine($"'{mobileList[i]}',");
+                }
+                else
+                {
+                    sb.AppendLine($"'{mobileList[i]}'");
+                }
+            }
 
-                connection.Execute(uQuery, updateViewModel);
-            });
+            string query = $"SELECT id FROM announces WHERE mobile in ({sb}) and announcer = 1";
+
+            var result = await connection.QueryAsync<int>(query);
+
+            return result;
+        } 
+
+        public async Task UpdateAnnouncerAsync(AnnounceAnnouncerUpdateViewModel updateViewModel)
+        {
+            string uQuery = "UPDATE announces SET announcer = @Announcer , number_checked = true WHERE id = @AnnounceId";
+
+            await connection.ExecuteAsync(uQuery, updateViewModel);
         }
 
         public Task ArendaAzUpdateAnnouncerAsync(ArendaAzAnnouncerUpdateVM updateViewModel)
@@ -78,22 +101,12 @@ namespace WebApi.Repository
             });
         }
 
-        public async Task<bool> IsAnnounceValid(int announceCode)
+        public async Task<bool> IsAnnounceValidAsync(AnnounceSearchViewModel searchVM)
         {
-            try
-            {
-                string query = $"SELECT COUNT(*) FROM announces WHERE parser_site = 'https://arenda.az' and original_id = @announceCode";
-                var count = await connection.ExecuteScalarAsync<long>(query, new { announceCode });
-                // return connection.Query<ParserAnnounce>(query, new { announceCode }).First();
+            string query = "SELECT COUNT(*) FROM announces WHERE original_id = @OriginalId and parser_site = @ParserSite";
+            var count = await connection.ExecuteScalarAsync<long>(query, searchVM);
 
-                return count == 0 ? false : true;
-            }
-            catch (Exception e)
-            {
-
-                throw;
-            }
-
+            return count == 0 ? false : true;
         }
     }
 }

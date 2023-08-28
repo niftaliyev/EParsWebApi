@@ -9,6 +9,8 @@ using System.Net.Http;
 using WebApi.Extensions;
 using WebApi.Proxy;
 using WebApi.Repository;
+using WebApi.Services.ArendaAz;
+using WebApi.Services.ArendaAz.Interfaces;
 using WebApi.Services.EmlakAz;
 using WebApi.Services.EmlakAz.Interfaces;
 using WebApi.Services.EmlakciAz;
@@ -16,11 +18,14 @@ using WebApi.Services.EmlakciAz.Interfaces;
 using WebApi.Services.EmlaktapAz;
 using WebApi.Services.EvinAz;
 using WebApi.Services.EvinAz.Interfaces;
+using WebApi.Services.LalafoAz;
 using WebApi.Services.TapAz;
 using WebApi.Services.TapAz.Interfaces;
 using WebApi.Services.UcuzTapAz;
 using WebApi.Services.UnvanAz;
 using WebApi.Services.VipEmlakAz;
+using WebApi.Services.YeniEmlakAz;
+using WebApi.Services.YeniEmlakAz.Interfaces;
 
 namespace WebApi
 {
@@ -39,7 +44,7 @@ namespace WebApi
                 options.Password = Configuration["ProxyServer:PasswordProxyServer"];
             });
 
-            //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlakcrawler;SslMode = none;"));
+             //services.AddTransient(x => new UnitOfWork("Server=localhost;Port=3306;Uid=root;Pwd='';Database=emlakscraping;SslMode = none;"));
             services.AddTransient(x => new UnitOfWork($"Server={Configuration["ConnectionStrings:server"]};Port=3306;Uid={Configuration["ConnectionStrings:username"]};Pwd={Configuration["ConnectionStrings:password"]};Database={Configuration["ConnectionStrings:dbname"]};SslMode = none;"));
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -49,14 +54,17 @@ namespace WebApi
             services.AddHttpClient();
 
 
-            services.AddTransient<ITypeOfProperty, TypeOfProperty>();
-            services.AddTransient<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
-            services.AddTransient<ITypeOfPropertyEmlakciAz, TypeOfPropertyEmlakciAz>();
-            services.AddTransient<TypeOfPropertyUcuzTapAz>();
-            services.AddTransient<TypeOfPropertyEmlaktapAz>();
-            services.AddTransient<ITypeOfPropertyUnvanAz,TypeOfPropertyUnvanAz>();
-            services.AddTransient<ITypeOfPropertyEvinAz,TypeOfPropertyEvinAz>();
-            services.AddTransient<ITypeOfPropertyVipEmlakAz,TypeOfPropertyVipEmlakAz>();
+            services.AddSingleton<ITypeOfProperty, TypeOfProperty>();
+            services.AddSingleton<ITypeOfPropertyTapAz, TypeOfPropertyTapAz>();
+            services.AddSingleton<ITypeOfPropertyEmlakciAz, TypeOfPropertyEmlakciAz>();
+            services.AddSingleton<TypeOfPropertyUcuzTapAz>();
+            services.AddSingleton<TypeOfPropertyEmlaktapAz>();
+            services.AddSingleton<PropertyTypeLalafo>();
+            services.AddSingleton<ITypeOfPropertyUnvanAz, TypeOfPropertyUnvanAz>();
+            services.AddSingleton<ITypeOfPropertyEvinAz, TypeOfPropertyEvinAz>();
+            services.AddSingleton<ITypeOfPropertyVipEmlakAz, TypeOfPropertyVipEmlakAz>();
+            services.AddSingleton<ITypeOfPropertyArendaAz, TypeOfPropertyArendaAz>();
+            services.AddSingleton<ITypeOfPropertyYeniEmlakAz, TypeOfPropertyYeniEmlakAz>();
 
             services.AddParsers();
             services.AddJobs();
@@ -85,7 +93,7 @@ namespace WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
                 //c.RoutePrefix = string.Empty;
             });
-            
+
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseEndpoints(endpoints =>

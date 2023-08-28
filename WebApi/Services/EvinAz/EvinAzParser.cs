@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
 using WebApi.Services.EvinAz.Interfaces;
+using WebApi.ViewModels;
 
 namespace WebApi.Services.EvinAz
 {
@@ -25,7 +26,7 @@ namespace WebApi.Services.EvinAz
         static string[] proxies = SingletonProxyServersIp.Instance;
         private readonly HttpClientCreater clientCreater;
         private static bool isActive = false;
-        public const int maxRequest = 50;
+        public const int maxRequest = 20;
 
         public EvinAzParser(HttpClient httpClient,
                                 UnitOfWork unitOfWork,
@@ -81,9 +82,11 @@ namespace WebApi.Services.EvinAz
 
                             try
                             {
+                               
+                               
                                 //https://evin.az/real-estate/1641200494
                                 var myUri = new Uri($"{model.site}/real-estate/{++id}", UriKind.Absolute);
-
+                               
                                 header = await _httpClient.GetAsync(myUri);
                                 var url = header.RequestMessage.RequestUri.AbsoluteUri;
                                 count++;
@@ -262,13 +265,13 @@ namespace WebApi.Services.EvinAz
                                     announce.cover = $@"EvinAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
 
                                     announce.logo_images = JsonSerializer.Serialize(await images);
+
                                    
-                                    //number check
                                     duration = 0;
 
                                     bool checkedNumber = false;
                                     var numberList = mobile.Split(',');
-                                    var checkNumberRieltorResult = _unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                    var checkNumberRieltorResult = await _unitOfWork.CheckNumberRepository.CheckNumberForRieltorAsync(numberList);
                                     if (checkNumberRieltorResult > 0)
                                     {
 
@@ -278,8 +281,9 @@ namespace WebApi.Services.EvinAz
 
                                     }
 
-                                    await _unitOfWork.Announces.Create(announce);
-                                    _unitOfWork.Dispose();
+                                    await _unitOfWork.Announces.CreateAsync(announce);
+                                   
+                                 
 
                                     if (checkedNumber == false)
                                     {
@@ -287,7 +291,7 @@ namespace WebApi.Services.EvinAz
                                         //EMLAK - BAZASI
                                         await _emlakBaza.CheckAsync(id, numberList);
                                     }
-
+                                    _unitOfWork.Dispose();
                                 }
 
                                 if (header.StatusCode.ToString() == "NotFound")
@@ -298,7 +302,7 @@ namespace WebApi.Services.EvinAz
                                 if (duration >= maxRequest)
                                 {
                                     model.last_id = (id - maxRequest);
-                                    TelegramBotService.Sender("unvan.az limited");
+                                    TelegramBotService.Sender("evin.az limited");
 
                                     isActive = false;
                                     _unitOfWork.ParserAnnounceRepository.Update(model);
@@ -309,7 +313,7 @@ namespace WebApi.Services.EvinAz
                             }
                             catch (Exception e)
                             {
-                                TelegramBotService.Sender($"no connection unvan.az {e.Message}");
+                                TelegramBotService.Sender($"no connection evin.az {e.Message}");
 
                                 count = 10;
                             }
@@ -318,7 +322,7 @@ namespace WebApi.Services.EvinAz
                     catch (Exception e)
                     {
 
-                        TelegramBotService.Sender($"end catch unvan.az {e.Message}");
+                        TelegramBotService.Sender($"end catch evin.az {e.Message}");
                     }
                 }
             }

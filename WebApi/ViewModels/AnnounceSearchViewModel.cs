@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace WebApi.ViewModels
 {
-    public class AnnounceAnnouncerUpdateViewModel
+    public class AnnounceSearchViewModel
     {
-        public int AnnounceId { get; set; }
-        public int Announcer { get; set; }
+        public int OriginalId { get; set; }
+        public string ParserSite { get; set; }
     }
 }

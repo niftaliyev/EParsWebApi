@@ -21,6 +21,7 @@ namespace WebApi.Jobs
             return _serviceProvider.GetService(bundle.JobDetail.JobType) as IJob;
         }
 
+
         public void ReturnJob(IJob job)
         {
             (job as IDisposable)?.Dispose();

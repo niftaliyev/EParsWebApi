@@ -27,11 +27,9 @@ namespace WebApi.Services.EvinAz
                 {
 
 
-                    //var count = doc.DocumentNode.SelectNodes(".//div[@class='thumbnails']//a").Count;
                     var largeImages = doc.DocumentNode.SelectNodes(".//div[@class='embed-responsive embed-responsive-4by3 border']//img");
                     for (int i = 0; i < largeImages.Count; i++)
                     {
-                        //var link = doc.DocumentNode.SelectNodes(".//div[@class='thumbnails']//a")[i].Attributes["href"].Value;
                         var link = largeImages[i].Attributes["src"].Value.Replace("mini","large");
                         if (i == 0)
                         {
@@ -40,11 +38,7 @@ namespace WebApi.Services.EvinAz
 
                         }
 
-                        //if (!Directory.Exists(filePath))
-                        //{
-                        //    Directory.CreateDirectory(filePath);
-                        //}
-
+                      
                         var filename = Guid.NewGuid().ToString();
                         var uri = new Uri(link);
 
@@ -53,7 +47,6 @@ namespace WebApi.Services.EvinAz
 
                         await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
 
-                        //var indexStartUpload = filePath.IndexOf("UploadFile");
                         var fileEndPath = $"{filePath}{filename}{fileExtension}";
                         images.Add(fileEndPath);
 

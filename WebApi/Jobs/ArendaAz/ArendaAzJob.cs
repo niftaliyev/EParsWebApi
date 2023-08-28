@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApi.Services;
 using WebApi.Services.ArendaAz;
 
 namespace WebApi.Jobs.ArendaAz
 {
+    [DisallowConcurrentExecution]
     public class ArendaAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -18,12 +20,21 @@ namespace WebApi.Jobs.ArendaAz
 
         public async Task Execute(IJobExecutionContext context)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var provider = scope.ServiceProvider;
+            try
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var provider = scope.ServiceProvider;
 
-            var arendaAzService = provider.GetRequiredService<ArendaAzParser>();
+                var arendaAzService = provider.GetRequiredService<ArendaAzParser>();
 
-            await arendaAzService.ArendaAzPars();
+                await arendaAzService.ArendaAzPars();
+            }
+            catch (Exception e)
+            {
+
+                TelegramBotService.Sender($"Cannot enter parser --> arenda.az -- {e.Message}");
+            }
+           
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using MySql.Data.MySqlClient;
+using System.Threading.Tasks;
 using WebApi.Models;
 
 namespace WebApi.Repository
@@ -27,13 +28,14 @@ namespace WebApi.Repository
             return -1;
         }
 
-        public int CheckNumberForRieltor(params string[] numbers)
+        public async Task<int> CheckNumberForRieltorAsync(params string[] numbers)
         {
 
             for (int i = 0; i < numbers.Length; i++)
             {
-                string uQuery = $"SELECT COUNT(*) FROM rieltor WHERE phone = {numbers[i]}";
-                var result = connection.QueryFirst<int>(uQuery);
+                var number = numbers[i];
+                string uQuery = $"SELECT COUNT(*) FROM rieltor WHERE phone = @phone";
+                var result =await connection.QueryFirstAsync<int>(uQuery,new { phone = number});
                 if (result > 0)
                 {
                     return 2;

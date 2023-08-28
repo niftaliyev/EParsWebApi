@@ -17,11 +17,11 @@ namespace WebApi.Repository
         }
         public IEnumerable<Cities> GetAll()
         {
-            var query = "select * from cities";
-
+            var query = "select * from cities order by id asc";
+            
             return connection.Query<Cities>(query);
         }
-
+      
         public IEnumerable<Region> GetAllRegions()
         {
             var query = "select * from regions";

@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Quartz;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using WebApi.Services.EmlakAz;
 
 namespace WebApi.Jobs
 {
+    [DisallowConcurrentExecution]
     public class EmlakAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -23,7 +21,7 @@ namespace WebApi.Jobs
 
             var emlakAzService = provider.GetRequiredService<EmlakAzParser>();
 
-            await emlakAzService.EmlakAzPars();
+            await emlakAzService.ParseSite();
         }
     }
 }

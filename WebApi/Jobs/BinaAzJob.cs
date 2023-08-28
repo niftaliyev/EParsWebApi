@@ -8,12 +8,14 @@ using WebApi.Services.BinaAz;
 
 namespace WebApi.Jobs
 {
+
+    [DisallowConcurrentExecution]
     public class BinaAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
         public BinaAzJob(IServiceScopeFactory serviceScopeFactory)
         {
-            _serviceScopeFactory = serviceScopeFactory;
+            _serviceScopeFactory = serviceScopeFactory;                                                    
         }
 
         public async Task Execute(IJobExecutionContext context)
@@ -23,7 +25,7 @@ namespace WebApi.Jobs
 
             var binaAzService = provider.GetRequiredService<BinaAzParser>();
 
-            await binaAzService.BinaAzPars();
+            await binaAzService.BinaAzPars();   
         }
     }
 }

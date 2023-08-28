@@ -32,6 +32,7 @@ namespace WebApi.Models
         public string space { get; set; }
         public int land_space { get; set; }
         public int document { get; set; }
+        public int kredit { get; set; }
         public string communal { get; set; }
         public string text { get; set; }
         public int view_count { get; set; }

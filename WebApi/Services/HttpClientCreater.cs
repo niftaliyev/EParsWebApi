@@ -18,20 +18,62 @@ namespace WebApi.Services
             Username = proxyServerOptions.Username;
             Password = proxyServerOptions.Password;
         }
+        //public HttpClient Create(string ipadress)
+        //{
+        //    try
+        //    {
+        //        return new HttpClient(new HttpClientHandler
+        //        {
+        //            Proxy = new WebProxy
+        //            {
+        //                Address = new Uri($"http://{ipadress}"),
+        //                BypassProxyOnLocal = false,
+        //                UseDefaultCredentials = false,
+        //                Credentials = new NetworkCredential(
+        //                              userName: Username,
+        //                              password: Password)
+        //            }
+        //        }, disposeHandler: true);
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        throw;
+        //    }
+          
+        //}
+
+
         public HttpClient Create(string ipadress)
         {
-            return new HttpClient(new HttpClientHandler
+            try
             {
-                Proxy = new WebProxy
+                //var httpClient = new HttpClient(new HttpClientHandler {  Proxy = new WebProxy("p.webshare.io:80"),Credentials  = new NetworkCredential(
+                //                      userName: "omjofiuv-rotate",
+                //                      password: "ouwtpatu6rf3")
+                //});
+
+                return new HttpClient(new HttpClientHandler
                 {
-                    Address = new Uri($"http://{ipadress}"),
-                    BypassProxyOnLocal = false,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(
-                userName: Username,
-                password: Password)
-                }
-            }, disposeHandler: true);
+                    Proxy = new WebProxy
+                    {
+                        Address = new Uri($"http://{ipadress}"),
+                        BypassProxyOnLocal = false,
+                        UseDefaultCredentials = false,
+                        Credentials = new NetworkCredential(
+                                      userName: Username,
+                                      password: Password)
+                    }
+                }, disposeHandler: true);
+
+                //return httpClient;
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
         }
     }
 }

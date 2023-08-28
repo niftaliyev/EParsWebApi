@@ -17,10 +17,17 @@ namespace WebApi.Repository
         }
         public void Create(AnnounceMark announceMark)
         {
-            string uQuery = "INSERT INTO announces_marks (id, announce_id,mark_id)"
-
-                + "VALUES(@id,@announce_id,@mark_id);";
+            string uQuery = "INSERT INTO announces_marks (announce_id,mark_id)"
+                + "VALUES(@announce_id,@mark_id);";
             connection.Execute(uQuery, announceMark);
+
+        }
+
+        public void CreateAnnounceCoordinates(AnnounceCoordinates announceCoordinate)
+        {
+            string uQuery = "INSERT INTO announce_coordinates (longitude,latitude,announce_id)"
+                + "VALUES(@longitude,@latitude,@announce_id);";
+            connection.Execute(uQuery, announceCoordinate);
 
         }
         public IEnumerable<Mark> GetMarks(string map)

@@ -1,19 +1,22 @@
-﻿using HtmlAgilityPack;
+﻿using Google.Protobuf.WellKnownTypes;
+using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
+using WebApi.ViewModels;
 
 namespace WebApi.Services.UcuzTapAz
 {
     public class UcuzTapAzParser
     {
-        private  HttpClient _httpClient;
+        private HttpClient _httpClient;
         private readonly EmlakBazaWithProxy _emlakBaza;
         HttpResponseMessage header;
         private readonly UnitOfWork _unitOfWork;
@@ -25,9 +28,9 @@ namespace WebApi.Services.UcuzTapAz
         private readonly UcuzTapAzMetroNames _metroNames;
         private readonly UcuzTapAzMarksNames _marksNames;
         static string[] proxies = SingletonProxyServersIp.Instance;
-
         private static bool isActive = false;
-        public const int maxRequest = 50;
+        private const int maxRequest = 50;
+
 
         public UcuzTapAzParser(HttpClient httpClient,
                                 UnitOfWork unitOfWork,
@@ -56,13 +59,14 @@ namespace WebApi.Services.UcuzTapAz
 
         public async Task UcuzTapAzPars()
         {
-
+            TelegramBotService.Sender("parsing ucuztap.az");
             var model = _unitOfWork.ParserAnnounceRepository.GetBySiteName("https://ucuztap.az");
 
             if (!isActive)
             {
                 if (model.isActive)
                 {
+
                     try
                     {
                         int id = model.last_id;
@@ -85,17 +89,29 @@ namespace WebApi.Services.UcuzTapAz
 
 
                             }
-
+                          
                             try
                             {
-                                Uri myUri = new Uri($"{model.site}/elan/{++id}-sat%C4%B1l%C4%B1r-kohne-tikili-65m-3-otaql%C4%B1/", UriKind.Absolute);
+                                id++;
+                                var searchViewModel = new AnnounceSearchViewModel
+                                {
+                                    ParserSite = model.site,
+                                    OriginalId = id
+                                };
 
-                                header = await _httpClient.GetAsync(myUri);
-                                var url = header.RequestMessage.RequestUri.AbsoluteUri;
+                                if (await _unitOfWork.Announces.IsAnnounceValidAsync(searchViewModel))
+                                {
+                                    continue;
+                                };
+
+                                Uri uri = new Uri($"{model.site}/elan/{id}-sat%C4%B1l%C4%B1r-kohne-tikili-65m-3-otaql%C4%B1/", UriKind.Absolute);
+
+                                //header = await _httpClient.GetAsync(myUri);
+                                //var url = header.RequestMessage.RequestUri.AbsoluteUri;
                                 count++;
                                 HtmlDocument doc = new HtmlDocument();
 
-                                var response = await _httpClient.GetAsync(url);
+                                var response = await _httpClient.GetAsync(uri);
 
                                 if (response.IsSuccessStatusCode)
                                 {
@@ -103,19 +119,21 @@ namespace WebApi.Services.UcuzTapAz
                                     if (!String.IsNullOrEmpty(html))
                                     {
                                         doc.LoadHtml(html);
-                                        try
+
+                                        //only parse "Daşınmaz əmlak"
+                                        if (doc.DocumentNode.SelectSingleNode("/html/body/div[4]/div/ol/li[2]/a") != null)
                                         {
-                                            //only parse "Daşınmaz əmlak"
                                             if (doc.DocumentNode.SelectSingleNode("/html/body/div[4]/div/ol/li[2]/a").InnerText.Trim() == "Daşınmaz əmlak")
                                             {
                                                 //if mobile exists
-                                                if (doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/div/aside/div/div/div[1]/div[2]/strong").InnerText != null)
+                                                if (doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/div/aside/div/div/div[1]/div[2]/strong") != null)
                                                 {
                                                     duration = 0;
                                                     Announce announce = new Announce();
 
                                                     announce.original_id = id;
                                                     announce.parser_site = model.site;
+
                                                     announce.announce_date = DateTime.Now;
 
                                                     var announcePrice = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/div[1]/button[1]/strong").InnerText;
@@ -151,8 +169,8 @@ namespace WebApi.Services.UcuzTapAz
                                                     var allPropertiesKeys = doc.DocumentNode.SelectNodes("/html/body/div[5]/div/div[1]/section/div/div[3]/div[1]/table/tbody/tr/td[1]");
                                                     var allPropertiesValues = doc.DocumentNode.SelectNodes("/html/body/div[5]/div/div[1]/section/div/div[3]/div[1]/table/tbody/tr/td[2]");
 
-                                                    /////////////// CHECK 
-                                                    ///
+                                                    /////////////// Location 
+
                                                     for (int i = 0; i < allPropertiesKeys.Count; i++)
                                                     {
                                                         if (allPropertiesKeys[i].InnerText == "Otaq sayı:")
@@ -163,7 +181,7 @@ namespace WebApi.Services.UcuzTapAz
                                                         {
                                                             announce.space = allPropertiesValues[i].InnerText;
                                                         }
-                                                        //Check again
+
                                                         else if (allPropertiesKeys[i].InnerText == "Rayon:")
                                                         {
                                                             if (allPropertiesValues[i].InnerText.EndsWith("q."))
@@ -263,53 +281,72 @@ namespace WebApi.Services.UcuzTapAz
 
                                                         }
                                                     }
+                                                    //////////////
 
 
-                                                    var cityName = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[4]/div[2]/div/span[1]").InnerText.Trim();
+                                                    ///City
+                                                    var cityName = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[4]/div[2]/div/span[1]");
 
                                                     if (cityName != null)
                                                     {
                                                         var cities = _unitOfWork.CitiesRepository.GetAll();
 
-                                                        foreach (var city in cities)
+                                                        if (cityName.InnerText.Trim() == "Abşeron")
                                                         {
-                                                            if (city.name.ToLower().Contains(cityName.ToLower()))
+                                                            announce.region_id = 1;
+                                                            announce.city_id = 1;
+
+                                                        }
+                                                        if (announce.city_id != 1)
+                                                        {
+                                                            foreach (var city in cities)
                                                             {
-                                                                announce.city_id = city.id;
-                                                                break;
+                                                                if (city.name.ToLower().Contains(cityName.InnerText.Trim().ToLower()))
+                                                                {
+                                                                    announce.city_id = city.id;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+
+                                                    }
+
+                                                    var name = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/div/aside/div/a/h3");
+                                                    if (name != null)
+                                                    {
+                                                        announce.name = name.InnerText;
+                                                    }
+                                                    ///////
+
+                                                    var prop = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/a/strong");
+                                                    if (prop != null)
+                                                    {
+                                                        var typeProp = _typeOfProperty.GetTitleOfProperty(prop.InnerText);
+                                                        if (typeProp > 0)
+                                                        {
+                                                            announce.property_type = typeProp;
+                                                        }
+                                                        else
+                                                        {
+                                                            var checkFromTitle = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/h1/strong").InnerText;
+                                                            if (checkFromTitle.Contains("Ofis"))
+                                                            {
+                                                                announce.property_type = 6;
+                                                            }
+                                                            else if (checkFromTitle.Contains("Obyekt"))
+                                                            {
+                                                                announce.property_type = 7;
+                                                            }
+                                                            else if (checkFromTitle.Contains("Mağaza"))
+                                                            {
+                                                                announce.property_type = 8;
                                                             }
                                                         }
                                                     }
 
-                                                    var name = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/div/aside/div/a/h3").InnerText;
-                                                    if (name != null)
-                                                    {
-                                                        announce.name = name;
-                                                    }
 
 
-                                                    var prop = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/a/strong").InnerText;
-                                                    var typeProp = _typeOfProperty.GetTitleOfProperty(prop);
-                                                    if (typeProp > 0)
-                                                    {
-                                                        announce.property_type = typeProp;
-                                                    }
-                                                    else
-                                                    {
-                                                        var checkFromTitle = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/h1/strong").InnerText;
-                                                        if (checkFromTitle.Contains("Ofis"))
-                                                        {
-                                                            announce.property_type = 6;
-                                                        }
-                                                        else if (checkFromTitle.Contains("Obyekt"))
-                                                        {
-                                                            announce.property_type = 7;
-                                                        }
-                                                        else if (checkFromTitle.Contains("Mağaza"))
-                                                        {
-                                                            announce.property_type = 8;
-                                                        }
-                                                    }
+
 
                                                     var announceType = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/h1/strong").InnerText;
 
@@ -339,7 +376,7 @@ namespace WebApi.Services.UcuzTapAz
                                                             b += 10;
                                                             divide--;
                                                         }
-                                                       
+
                                                     }
 
                                                     if (mobile != null)
@@ -347,7 +384,7 @@ namespace WebApi.Services.UcuzTapAz
 
                                                     bool checkedNumber = false;
                                                     var numberList = mobile.Split(',');
-                                                    var checkNumberRieltorResult = _unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                                    var checkNumberRieltorResult = await  _unitOfWork.CheckNumberRepository.CheckNumberForRieltorAsync(numberList);
                                                     if (checkNumberRieltorResult > 0)
                                                     {
 
@@ -357,40 +394,54 @@ namespace WebApi.Services.UcuzTapAz
 
                                                     }
 
-                                                    var uri = new Uri(doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/div[2]/div[1]/a[1]/img").Attributes["src"].Value);
+                                                    var imageUri = new Uri(doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/div[2]/div[1]/a[1]/img").Attributes["src"].Value);
 
                                                     var filePath = $@"UcuzTapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/";
 
 
-                                                    var images =  _imageUploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
-                                                    var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                                                    var images = _imageUploader.ImageDownloader(doc, id.ToString(), filePath, _httpClient);
+                                                    var uriWithoutQuery = imageUri.GetLeftPart(UriPartial.Path);
                                                     var fileExtension = Path.GetExtension(uriWithoutQuery);
 
                                                     announce.cover = $@"UcuzTapAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{id}/Thumb{fileExtension}";
                                                     announce.logo_images = JsonSerializer.Serialize(await images);
 
-                                                    await _unitOfWork.Announces.Create(announce);
-                                                    _unitOfWork.Dispose();
+                                                   int lastAnnounceId =  await _unitOfWork.Announces.CreateAsync(announce);
+
+
 
                                                     if (checkedNumber == false)
                                                     {
 
                                                         //EMLAK - BAZASI
-                                                        await _emlakBaza.CheckAsync(id, numberList);
+                                                        await _emlakBaza.CheckAsync(lastAnnounceId, numberList);
+                                                    }
+
+                                                    _unitOfWork.Dispose();
+                                                }
+
+                                                //if announcement's waiting for acception
+                                                else if (doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/div/aside/div/div/div[1]/div[2]/span") != null)
+                                                {
+                                                    if (doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/div/aside/div/div/div[1]/div[2]/span").InnerText.Trim() == "Elan yoxlanışdadır")
+                                                    {
+                                                        duration++;
+
                                                     }
 
                                                 }
-
+                                              
                                             }
-                                            else
+                                        }
+                                        else if (doc.DocumentNode.SelectSingleNode("/html/body/div[4]/div/h3") != null)
+                                        {
+                                            if (doc.DocumentNode.SelectSingleNode("/html/body/div[4]/div/h3").InnerText.Trim() == "Səhifə Tapılmadı")
                                             {
                                                 duration++;
                                             }
                                         }
-                                        catch (Exception)
-                                        {
-                                            duration++;
-                                        }
+
+
 
 
                                     }
@@ -399,34 +450,27 @@ namespace WebApi.Services.UcuzTapAz
 
                                 }
 
-                                if (response.StatusCode.ToString() == "NotFound")
-                                {
-                                    duration++;
-                                }
-
-
                                 if (duration >= maxRequest)
                                 {
-                                    model.last_id = (id - maxRequest);
-                                    TelegramBotService.Sender("ucuztap.az limited");
+                                    model.last_id = id - maxRequest;
+                                    TelegramBotService.Sender("ucuztap.az announces's waiting for acception");
 
                                     isActive = false;
                                     _unitOfWork.ParserAnnounceRepository.Update(model);
-                                    duration = 0;
                                     break;
                                 }
 
                             }
                             catch (Exception e)
                             {
-                                TelegramBotService.Sender($"ucuztap.az exception {e}");
+                                TelegramBotService.Sender($"ucuztap.az exception {e.Message}");
                             }
                         }
                     }
                     catch (Exception e)
                     {
 
-                        TelegramBotService.Sender($"ucuztap.az no connection  {e}");
+                        TelegramBotService.Sender($"ucuztap.az no connection  {e.Message}");
                     }
                 }
 

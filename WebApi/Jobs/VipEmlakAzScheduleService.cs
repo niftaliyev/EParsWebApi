@@ -13,7 +13,7 @@ namespace WebApi.Jobs
         }
         protected override TriggerBuilder ConfigureTrigger(TriggerBuilder triggerBuilder)
         {
-            return triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInMinutes(15).RepeatForever());
+            return triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInMinutes(3).RepeatForever());
         }
     }
 }

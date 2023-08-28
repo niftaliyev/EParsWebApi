@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApi.Services;
 using WebApi.Services.EvinAz;
 
 namespace WebApi.Jobs
 {
+    [DisallowConcurrentExecution]
     public class EvinAzJob :IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -18,12 +20,20 @@ namespace WebApi.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var provider = scope.ServiceProvider;
+            try
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var provider = scope.ServiceProvider;
 
-            var evinAzService = provider.GetRequiredService<EvinAzParser>();
+                var evinAzService = provider.GetRequiredService<EvinAzParser>();
 
-            await evinAzService.EvinAzPars();
+                await evinAzService.EvinAzPars();
+            }
+            catch (Exception e)
+            {
+                TelegramBotService.Sender($"cannot enter parser --> evin.az -- {e.Message}");
+            }
+          
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
 using WebApi.Services.ArendaAz.Interfaces;
+using WebApi.ViewModels;
 
 namespace WebApi.Services.ArendaAz
 {
@@ -18,42 +19,50 @@ namespace WebApi.Services.ArendaAz
         private HttpClient _httpClient;
         private readonly UnitOfWork _unitOfWork;
         HttpResponseMessage header;
-        private static bool isActive = false;
         private readonly ArendaAzSettlementNames _settlementNames;
         private readonly ArendaAzMetroNames _metroNames;
         private readonly ITypeOfPropertyArendaAz _propertyType;
         private readonly ArendaAzEmlakBazaWithProxy _emlakBaza;
         private readonly ArendaAzImageUploader _imageUploader;
-        private readonly HttpClientCreater clientCreater;
+        private readonly HttpClientCreater _clientCreater;
 
         static string[] proxies = SingletonProxyServersIp.Instance;
-        public ArendaAzParser(HttpClient httpClient, UnitOfWork unitOfWork, ArendaAzSettlementNames settlementNames
-                               , ArendaAzMetroNames metroNames, ITypeOfPropertyArendaAz propertyType, ArendaAzEmlakBazaWithProxy emlakBaza
-                                , ArendaAzImageUploader imageUploader,
-                                    HttpClientCreater clientCreater)
+        public ArendaAzParser(//HttpClient httpClient,
+                              UnitOfWork unitOfWork,
+                              ArendaAzSettlementNames settlementNames,
+                              ArendaAzMetroNames metroNames,
+                              ITypeOfPropertyArendaAz propertyType,
+                              ArendaAzEmlakBazaWithProxy emlakBaza,
+                              ArendaAzImageUploader imageUploader,
+                              HttpClientCreater clientCreater
+                              )
         {
-            _httpClient = httpClient;
+            //_httpClient = httpClient;
             _unitOfWork = unitOfWork;
             _settlementNames = settlementNames;
             _metroNames = metroNames;
             _propertyType = propertyType;
             _emlakBaza = emlakBaza;
             _imageUploader = imageUploader;
+            _clientCreater = clientCreater;
         }
 
         public async Task ArendaAzPars()
         {
-            if (!isActive)
+
+            try
             {
-                int x = 0;
-                isActive = true;
+                var model = _unitOfWork.ParserAnnounceRepository.GetBySiteName("https://arenda.az");
 
+                var uri = new Uri("https://arenda.az/filtirli-axtaris/?home_search=1&lang=1&site=1&home_s=1&elan_novu%5B1%5D=1&elan_novu%5B2%5D=2&elan_novu%5B3%5D=3&emlak_novu%5B370%5D=370&emlak_novu%5B371%5D=371&emlak_novu%5B5%5D=5&emlak_novu%5B861%5D=861&emlak_novu%5B94%5D=94&emlak_novu%5B8%5D=8&emlak_novu%5B270%5D=270&emlak_novu%5B854%5D=854&price_min=&price_max=&otaq_min=0&otaq_max=0&sahe_min=&sahe_max=&mertebe_min=0&mertebe_max=0&y_mertebe_min=0&y_mertebe_max=0&axtar=&order=2&limit=3");
 
-                var uri = new Uri("https://arenda.az/filtirli-axtaris/?home_search=1&lang=1&site=1&home_s=1&elan_novu%5B1%5D=1&elan_novu%5B2%5D=2&elan_novu%5B3%5D=3&emlak_novu%5B370%5D=370&emlak_novu%5B371%5D=371&emlak_novu%5B5%5D=5&emlak_novu%5B861%5D=861&emlak_novu%5B94%5D=94&emlak_novu%5B8%5D=8&emlak_novu%5B270%5D=270&emlak_novu%5B854%5D=854&price_min=&price_max=&otaq_min=0&otaq_max=0&sahe_min=&sahe_max=&mertebe_min=0&mertebe_max=0&y_mertebe_min=0&y_mertebe_max=0&axtar=&order=2");
+                Random rnd = new Random();
+                _httpClient = _clientCreater.Create(proxies[rnd.Next(0, 99)]);
+                // _httpClient = new HttpClient();
 
-                header = await _httpClient.GetAsync(uri);
-                var url = header.RequestMessage.RequestUri.AbsoluteUri;
-                var response = await _httpClient.GetAsync(url);
+                //header = await _httpClient.GetAsync(uri);
+                //var url = header.RequestMessage.RequestUri.AbsoluteUri;
+                var response = await _httpClient.GetAsync(uri);
                 if (response.IsSuccessStatusCode)
                 {
                     var html = await response.Content.ReadAsStringAsync();
@@ -61,74 +70,60 @@ namespace WebApi.Services.ArendaAz
                     HtmlDocument doc = new HtmlDocument();
 
                     doc.LoadHtml(html);
-
+                    
 
                     var announceLinks = doc.DocumentNode.SelectNodes(".//ul[@class='a_netice full elan_list results_list_']//li//a");
                     var announceDates = doc.DocumentNode.SelectNodes(".//ul[@class='a_netice full elan_list results_list_']//li//a//span[@class='elan_box_date']");
-                    
-                    var model = _unitOfWork.InfoSiteRepository.GetBySiteName("https://arenda.az");
 
 
 
-                    bool isFirstAnnounce = true;
-                    int counter = 0;
                     int count = 0;
                     int y = 0;
+                    int x = 0;
                     while (true)
                     {
 
                         if (count >= 10)
                         {
                             y++;
-                            if (y >= 350)
+                            if (y >= 100)
                                 y = 0;
 
-                            _httpClient = clientCreater.Create(proxies[y]);
+                            _httpClient = _clientCreater.Create(proxies[y]);
                             count = 0;
                         }
 
                         try
                         {
-                            if (announceDates[x++].InnerText.Contains("Bugün"))
+                            if (x >= announceDates.Count())
+                            {
+                                break;
+                            }
+                            if (announceDates[x].InnerText.Contains("Bugün"))
                             {
                                 var req = await _httpClient.GetAsync(announceLinks[x].Attributes["href"].Value);
+
                                 if (req.IsSuccessStatusCode)
                                 {
 
-
+                                    count++;
                                     HtmlDocument doc2 = new HtmlDocument();
                                     var html2 = await req.Content.ReadAsStringAsync();
                                     doc2.LoadHtml(html2);
 
                                     int announceCode = Int32.Parse(doc2.DocumentNode.SelectSingleNode(".//div[@class='elan_e_kodu']//p[1]//strong").InnerText);
-                                   
+
                                     // if announce is valid in DB , skip it 
-                                    bool isAnnounceValid = await _unitOfWork.Announces.IsAnnounceValid(announceCode);
-                                    if (isAnnounceValid)
+                                    var searchVM = new AnnounceSearchViewModel()
                                     {
-                                        y++;
-                                        if (y >= 5)
-                                        {
-                                            isActive = false;
-                                            break;
-                                        }
+                                        OriginalId = announceCode,
+                                        ParserSite = model.site
+                                    };
+                                     
+                                    if (await _unitOfWork.Announces.IsAnnounceValidAsync(searchVM))
+                                    {
+                                        x++;
                                         continue;
-                                    }
-                                    else
-                                    {
-                                        y = 0;
-                                    }
-
-                                    if (model.last_index == announceCode)
-                                    {
-                                        break;
-                                    }
-                                    if (isFirstAnnounce)
-                                    {
-
-                                        isFirstAnnounce = false;
-                                        model.last_index = announceCode;
-                                        _unitOfWork.InfoSiteRepository.Update(model);
                                     }
 
 
@@ -136,69 +131,112 @@ namespace WebApi.Services.ArendaAz
                                     announce.original_id = announceCode;
                                     announce.address = doc2.DocumentNode.SelectSingleNode(".//span[@class='elan_unvan_txt']").InnerText;
 
-                                    announce.parser_site = model.parser_site;
-                                    var text = doc2.DocumentNode.SelectSingleNode(".//div[@class='full elan_info_txt']").InnerText;
+                                    announce.parser_site = model.site;
 
+                                    var text = doc2.DocumentNode.SelectSingleNode(".//div[@class='full elan_info_txt']").InnerText;
                                     announce.text = text;
 
 
-                                    var price = doc2.DocumentNode.SelectSingleNode(".//div[@class='full elan_new_price_box text-center']//p/text()").InnerText.Trim();
+                                    var price = doc2.DocumentNode.SelectSingleNode(".//div[@class='full elan_new_price_box text-center']//p/text()");
+                                    if (price != null)
+                                    {
+                                        announce.price = Int32.Parse(price.InnerText.Trim().Replace(" ", ""));
+                                    }
 
-                                    announce.price = Int32.Parse(price.Replace(" ", ""));
 
                                     var locationList = doc2.DocumentNode.SelectNodes(".//ul[@class='elan_adr_list full']//li//a");
 
+                                    bool isCityFound = false;
+                                    bool isRegionFound = false;
+                                    bool IsSettlementFound = false;
+
+                                    var cities = _unitOfWork.CitiesRepository.GetAll();
+                                    var regions = _unitOfWork.CitiesRepository.GetAllRegions();
+                                    var settlements = _settlementNames.GetSettlementsNamesAll();
+                                    var metros = _metroNames.GetMetroNameAll();
+
                                     for (int i = 0; i < locationList.Count; i++)
                                     {
-                                        var cities = _unitOfWork.CitiesRepository.GetAll();
-                                        var regions = _unitOfWork.CitiesRepository.GetAllRegions();
-                                        var settlements = _settlementNames.GetSettlementsNamesAll();
-                                        var metros = _metroNames.GetMetroNameAll();
+                                       
 
-
-                                        foreach (var city in cities)
+                                        if (!isCityFound)
                                         {
-                                            if (locationList[i].InnerText.Trim() == city.name)
+                                            foreach (var city in cities)
                                             {
-                                                announce.city_id = city.id;
-                                                break;
+                                                //modify Abşeron as region instead of city
+                                                if (city.name == "Abşeron")
+                                                {
+                                                    announce.region_id = 1;
+                                                    isRegionFound = true;
+                                                    break;
+                                                }
+                                                if (locationList[i].InnerText.Trim() == city.name)
+                                                {
+                                                    announce.city_id = city.id;
+                                                    isCityFound = true;
+                                                    goto getout;
+                                                }
                                             }
                                         }
 
-                                        foreach (var region in regions)
+                                        if (!isRegionFound)
                                         {
-                                            if (locationList[i].InnerText.Trim().ToLower() == region.name.ToLower())
+                                            foreach (var region in regions)
                                             {
-                                                announce.region_id = region.id;
-                                                break;
+                                                if (locationList[i].InnerText.Trim().ToLower() == region.name.ToLower())
+                                                {
+                                                    announce.region_id = region.id;
+                                                    isRegionFound = true;
+                                                    goto getout;
+                                                }
+                                            }
+                                        }
+                                        if (!IsSettlementFound)
+                                        {
+                                            foreach (var settlement in settlements)
+                                            {
+                                                if (locationList[i].InnerText.Trim().ToLower() == "bakı")
+                                                {
+                                                    goto getout;
+                                                }
+                                                if (settlement.Key.ToLower().Contains(locationList[i].InnerText.Trim().ToLower()))
+                                                {
+                                                    announce.settlement_id = settlement.Value;
+                                                    IsSettlementFound = true;
+                                                    goto getout;
+                                                }
                                             }
                                         }
 
-                                        foreach (var settlement in settlements)
+                                        if (locationList[i].InnerText.Trim().Contains("metro"))
                                         {
-                                            if (settlement.Key.ToLower().Contains(locationList[i].InnerText.Trim().ToLower()))
+                                            foreach (var metro in metros)
                                             {
-                                                announce.settlement_id = settlement.Value;
-                                                break;
+                                                if (metro.Key.ToLower().Contains(locationList[i].InnerText.Trim().Replace("metro ", "").ToLower()))
+                                                {
+                                                    announce.metro_id = metro.Value;
+                                                    goto getout;
+                                                }
                                             }
                                         }
 
-                                        foreach (var metro in metros)
-                                        {
-                                            if (metro.Key.ToLower().Contains(locationList[i].InnerText.Trim().Replace("metro ", "").ToLower()))
-                                            {
-                                                announce.metro_id = metro.Value;
-                                                break;
-                                            }
-                                        }
+
+                                        getout:
+                                        continue;
                                     }
 
                                     // Kirayə Satılır
-                                    var announce_type = doc2.DocumentNode.SelectSingleNode(".//h1[@class='elan_title']").InnerText;
+                                    var announce_type = doc2.DocumentNode.SelectSingleNode(".//h1[@class='elan_title']");
+                                    if (announce_type != null)
+                                    {
+                                        var type = _propertyType.GetTypeOfProperty(announce_type.InnerText);
+                                        announce.announce_type = type;
 
-                                    var type = _propertyType.GetTypeOfProperty(announce_type);
+                                    }
 
-                                    announce.announce_type = type;
+
+
+
 
                                     // Yeni tikili ve s ....
 
@@ -281,18 +319,17 @@ namespace WebApi.Services.ArendaAz
                                     announce.mobile = numbers.ToString();
 
 
-                                    bool checkedNumber = false;
+                                   
                                     var numberList = numbers.ToString().Split(',');
-                                    var checkNumberRieltorResult = _unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
-                                    if (checkNumberRieltorResult > 0)
-                                    {
+                                    //var checkNumberRieltorResult = await _unitOfWork.CheckNumberRepository.CheckNumberForRieltorAsync(numberList);
+                                    //if (checkNumberRieltorResult > 0)
+                                    //{
 
-                                        announce.announcer = checkNumberRieltorResult;
-                                        announce.number_checked = true;
-                                        checkedNumber = true;
-
-                                    }
-                                    /////IMAGES
+                                    //    announce.announcer = checkNumberRieltorResult;
+                                    //    announce.number_checked = true;
+                                    //    checkedNumber = true;
+                                    //}
+                                    ///IMAGES
                                     var filePath = $@"ArendaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{announceCode}/";
                                     var images = _imageUploader.ImageDownloader(doc2, announceCode.ToString(), filePath, _httpClient);
 
@@ -304,25 +341,64 @@ namespace WebApi.Services.ArendaAz
                                     var fileExtension = Path.GetExtension(uriWithoutQuery);
                                     announce.cover = $@"ArendaAz/{DateTime.Now.Year}/{DateTime.Now.Month}/{announceCode}/Thumb{fileExtension}";
                                     announce.logo_images = JsonSerializer.Serialize(await images);
-                                    /////
+                                    ///
 
                                     announce.announce_date = DateTime.Now;
                                     //*[@id = "elan_desc"] / section[2] / div[3] / div[1] / p[1]v
 
                                     var date = doc2.DocumentNode.SelectSingleNode(".//div[@class='elan_date_box_rside']//p[1]//text()").InnerText;
                                     announce.original_date = date.Replace("Elanın tarixi: ", "");
-
-                                    var lastId = await _unitOfWork.Announces.Create(announce);
-                                    _unitOfWork.Dispose();
-
-                                    if (checkedNumber == false)
+                                    bool isRieltor = false;
+                                    if (announcer == "Vasitəçi")
                                     {
+                                        isRieltor = true;
+                                        int checkNumberRieltorResult = await _unitOfWork.CheckNumberRepository.CheckNumberForRieltorAsync(numberList);
 
+                                        // Mobile exists in rieltor table
+                                        if (checkNumberRieltorResult > 0)
+                                        {
+                                            announce.number_checked = true;
+                                        }
+                                        else
+                                        {
+                                            List<Rieltor> rieltors = new();
+
+                                            for (int i = 0; i < numberList.Length; i++)
+                                            {
+                                                rieltors.Add(new Rieltor { Phone = numberList[i] });
+                                            }
+
+                                            await _unitOfWork.RieltorRepository.BulkInsertAsync(rieltors);
+                                        }
+
+                                        var ids = await _unitOfWork.Announces.GetAnnouncesByMobileListAsync(numberList);
+                                        foreach (var id in ids)
+                                        {
+                                            await _unitOfWork.Announces.ArendaAzUpdateAnnouncerAsync(new ArendaAzAnnouncerUpdateVM { Id = id, Announcer = 2 });
+                                            TelegramBotService.Sender($"arenda.az - modify correct announcer for id = {id}");
+                                        }
+
+                                        TelegramBotService.Sender($"arenda.az - announce modification completed");
+                                    }
+                                    var lastId = await _unitOfWork.Announces.CreateAsync(announce);
+                                    HandleMapCoordinates(doc2, lastId);
+
+
+                                   
+                                    if(!isRieltor)
+                                    {
                                         //EMLAK - BAZASI
                                         await _emlakBaza.CheckAsync(lastId, numberList);
                                     }
 
+                                    //if (checkedNumber == false)
+                                    //{
 
+                                    //    //EMLAK - BAZASI
+                                    //    await _emlakBaza.CheckAsync(lastId, numberList);
+                                    //}
+
+                                    _unitOfWork.Dispose();
 
 
 
@@ -331,24 +407,15 @@ namespace WebApi.Services.ArendaAz
 
                             }
 
-
-                            //if (counter >= maxRequest)
-                            //{
-
-
-                            //    //TelegramBotService.Sender("unvan.az limited");
-
-                            //    isActive = false;
-                            //    _unitOfWork.InfoSiteRepository.Update(model);
-                            //    counter = 0;
-                            //    break;
-                            //}
+                            x++;
                         }
+
                         catch (Exception e)
                         {
-                            TelegramBotService.Sender($"Error : {e.Message}");
-                            isActive = false;
-                            break;
+                            TelegramBotService.Sender($"Error : {e.Message} -- arenda.az ");
+                            count = 10;
+                            x++;
+
                         }
 
                     }
@@ -360,13 +427,46 @@ namespace WebApi.Services.ArendaAz
                 {
                     TelegramBotService.Sender("no access to arenda.az");
                 }
+            }
+            catch (Exception e)
+            {
 
+
+            }
+
+
+        }
+
+
+
+
+        public void HandleMapCoordinates(HtmlDocument doc, int announceId)
+        {
+            if (doc.GetElementbyId("lon") != null && doc.GetElementbyId("lat") != null)
+            {
+                var latitude = doc.GetElementbyId("lat").GetAttributeValue("value", "");
+                var longitude = doc.GetElementbyId("lon").GetAttributeValue("value", "");
+
+                var announceCoordinates = new AnnounceCoordinates { longitude = Convert.ToDecimal(longitude), latitude = Convert.ToDecimal(latitude), announce_id = announceId };
+                _unitOfWork.MarkRepository.CreateAnnounceCoordinates(announceCoordinates);
+
+                var coordinates = $"{latitude},{longitude}";
+                FindNearMarksAroundCurrentAnnounce(coordinates, announceId);
             }
 
 
 
         }
 
+        public void FindNearMarksAroundCurrentAnnounce(string mapCoordinates, int announceId)
+        {
+            var marks = _unitOfWork.MarkRepository.GetMarks(mapCoordinates);
+            foreach (var item in marks)
+            {
+                var announceMark = new AnnounceMark { announce_id = announceId, mark_id = item.id };
+                _unitOfWork.MarkRepository.Create(announceMark);
+            }
+        }
 
 
     }

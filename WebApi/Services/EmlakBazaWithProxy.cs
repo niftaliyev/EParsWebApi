@@ -26,68 +26,76 @@ namespace WebApi.Services
         {
             try
             {
-      
-                    Random rnd = new Random();
-                    httpClient = clientCreater.Create(proxies[rnd.Next(0, 350)]);
-                    bool turn = false;
-                    for (int i = 0; i < numbers.Length; i++)
+
+                Random rnd = new Random();
+               // httpClient = clientCreater.Create(proxies[rnd.Next(0, 350)]);
+                bool turn = false;
+                for (int i = 0; i < numbers.Length; i++)
+                {
+                    httpClient = clientCreater.Create(proxies[rnd.Next(0, 99)]);
+                    var values = new Dictionary<string, string>();
+
+                    values.Add("number", numbers[i]);
+
+                    var content = new FormUrlEncodedContent(values);
+
+                    using var response = await httpClient.PostAsync("https://emlak-bazasi.com/search/agency/", content);
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        httpClient = clientCreater.Create(proxies[rnd.Next(0,350)]);
-                        var values = new Dictionary<string, string>();
+                        var responseString = await response.Content.ReadAsStringAsync();
 
-                        values.Add("number", numbers[i]);
-
-                        var content = new FormUrlEncodedContent(values);
-
-                        var response = await httpClient.PostAsync("https://emlak-bazasi.com/search/agency/", content);
-
-                        if (response != null)
+                        if (!string.IsNullOrEmpty(responseString))
                         {
-                            var responseString = await response.Content.ReadAsStringAsync();
+                            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                            doc.LoadHtml(responseString);
 
-                            if (!string.IsNullOrEmpty(responseString))
+                            var counts = doc.DocumentNode.SelectNodes(".//div[@class='count']");
+                            if (counts != null && counts[1] != null)
                             {
-                                HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-                                doc.LoadHtml(responseString);
+                                string result = counts[1].InnerText.Trim();
 
-                                var counts = doc.DocumentNode.SelectNodes(".//div[@class='count']");
-                                if (counts != null && counts[1] != null)
+                                if (result != null)
                                 {
-                                    string result = counts[1].InnerText.Trim();
-
-                                    if (result != null)
+                                    if (result.Trim() == "Vasitəçidir")
                                     {
-                                        if (result.Trim() == "Vasitəçidir")
+                                        for (int j = 0; j < numbers.Length; j++)
                                         {
-                                            for (int j = 0; j < numbers.Length; j++)
-                                            {
-                                                await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = numbers[j] });
-                                            }
+                                            await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = numbers[j] });
+                                        }
 
-                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 2 });
-                                            turn = true;
-                                            break;
+                                        await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { AnnounceId = id, Announcer = 2 });
+                                        turn = true;
+                                        break;
+
+                                    }
+                                    else if (result.Trim() == "Vasitəçi deyil")
+                                    {
+
+
+                                        if (i == (numbers.Length - 1))
+                                        {
+                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { AnnounceId = id, Announcer = 1 });
 
                                         }
-                                        else if (result.Trim() == "Vasitəçi deyil")
-                                        {
 
-
-                                            if (i == (numbers.Length - 1))
-                                            {
-                                                await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
-                                   
-                                            }
-
-                                        }
                                     }
                                 }
                             }
                         }
                     }
+                }
+
+              
             }
             catch (Exception e)
             {
+                TelegramBotService.Sender($"EmlakBazaWithProxy -- {e.Message}");
+            }
+            finally 
+            {
+               httpClient.Dispose();
+                unitOfWork.Dispose();
             }
         }
     }

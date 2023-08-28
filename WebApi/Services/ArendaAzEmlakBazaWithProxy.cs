@@ -16,7 +16,9 @@ namespace WebApi.Services
         HttpClient httpClient;
         static string[] proxies = SingletonProxyServersIp.Instance;
 
-        public ArendaAzEmlakBazaWithProxy(UnitOfWork unitOfWork, HttpClientCreater clientCreater)
+        public ArendaAzEmlakBazaWithProxy(UnitOfWork unitOfWork,
+                                          HttpClientCreater clientCreater
+                                            )
         {
             this.unitOfWork = unitOfWork;
             this.clientCreater = clientCreater;
@@ -29,11 +31,12 @@ namespace WebApi.Services
             {
 
                 Random rnd = new Random();
-                httpClient = clientCreater.Create(proxies[rnd.Next(0, 350)]);
+                httpClient = clientCreater.Create(proxies[rnd.Next(0, 99)]);
                 bool turn = false;
                 for (int i = 0; i < numbers.Length; i++)
                 {
-                    httpClient = clientCreater.Create(proxies[rnd.Next(0, 350)]);
+                    httpClient = clientCreater.Create(proxies[rnd.Next(0, 99)]);
+                    httpClient = new HttpClient();
                     var values = new Dictionary<string, string>();
 
                     values.Add("number", numbers[i]);

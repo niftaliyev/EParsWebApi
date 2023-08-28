@@ -3,6 +3,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using WebApi.Models;
 
@@ -15,19 +16,24 @@ namespace WebApi.Repository
         {
             this.connection = connection;
         }
-        public Task CreateAsync(Rieltor rieltor)
+        public  async Task CreateAsync(Rieltor rieltor)
         {
-            return Task.Run(() =>
-            {
                 string uQuery = "INSERT INTO rieltor (phone)"
-
                 + "VALUES(@Phone); ";
-            connection.Execute(uQuery, rieltor);
-            });
+           await connection.ExecuteAsync(uQuery, rieltor);
         }
 
+        public async Task BulkInsertAsync(List<Rieltor> rieltors)
+        {
+            string query = "INSERT INTO rieltor (phone) VALUES ";
+            var phones = rieltors.Select(x => $"('{x.Phone}')");
+            query += string.Join(",", phones);
+
+            await connection.ExecuteAsync(query);
+        }
         public IEnumerable<Rieltor> GetAll()
         {
+            
             throw new NotImplementedException();
         }
 

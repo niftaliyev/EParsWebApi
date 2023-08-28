@@ -9,7 +9,7 @@ namespace WebApi.Models
     {
         public int id { get; set; }
         public string name { get; set; }
-        public string map { get; set; }
+        //public string map { get; set; }
         public int region_id { get; set; }
         public int settlement_id { get; set; }
     }

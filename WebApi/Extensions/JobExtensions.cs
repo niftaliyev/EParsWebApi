@@ -1,8 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using WebApi.Jobs;
 using WebApi.Jobs.ArendaAz;
 
@@ -12,6 +8,8 @@ namespace WebApi.Extensions
     {
         public static IServiceCollection AddJobs(this IServiceCollection services)
         {
+            services.AddTransient<ArendaAzJob>();
+            services.AddHostedService<ArendaAzScheduleService>();
             services.AddTransient<TapAzJob>();
             services.AddHostedService<TapAzScheduleService>();
             services.AddTransient<EmlakAzJob>();
@@ -20,24 +18,18 @@ namespace WebApi.Extensions
             services.AddHostedService<YeniEmlakAzScheduleService>();
             services.AddTransient<BinaAzJob>();
             services.AddHostedService<BinaAzScheduleService>();
-            services.AddTransient<EmlakciAzJob>();
-            services.AddHostedService<EmlakciAzScheduleService>();
+
             services.AddTransient<LalalafoAzJob>();
             services.AddHostedService<LalafoAzScheduleService>();
-            services.AddTransient<DashinmazEmlakJob>();
-            services.AddHostedService<DashinmazEmlakAzScheduleService>();
-            services.AddTransient<UcuzTapAzJob>();
-            services.AddHostedService<UcuzTapAzScheduleService>();
-            services.AddTransient<EmlaktapAzJob>();
-            services.AddTransient<EmlaktapAzScheduleService>();
+            //services.AddTransient<UcuzTapAzJob>();
+            //services.AddHostedService<UcuzTapAzScheduleService>();
+
             services.AddTransient<UnvanAzJob>();
-            services.AddTransient<UnvanAzScheduleService>();
-            services.AddTransient<EvinAzJob>();
-            services.AddTransient<EvinAzScheduleService>();
+            services.AddHostedService<UnvanAzScheduleService>();
+
             services.AddTransient<VipEmlakAzJob>();
-            services.AddTransient<VipEmlakAzScheduleService>();
-            services.AddTransient<ArendaAzJob>();
-            services.AddTransient<ArendaAzScheduleService>();
+            services.AddHostedService<VipEmlakAzScheduleService>();
+
             return services;
         }
     }

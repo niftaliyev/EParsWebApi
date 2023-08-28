@@ -49,8 +49,7 @@ namespace WebApi.Services.UcuzTapAz
             // end nizami
 
             //nerimanov
-            settlementNames.Add("Böyükşor q.", 54);
-
+         
 
 
             settlementNames.Add("Xutor q.", 26);

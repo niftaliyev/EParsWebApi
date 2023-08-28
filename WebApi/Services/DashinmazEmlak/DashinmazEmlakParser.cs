@@ -233,7 +233,7 @@ namespace WebApi.Services.DashinmazEmlak
 
                                             bool checkedNumber = false;
                                             var numberList = mobileNumber.Split(',');
-                                            var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList);
+                                            var checkNumberRieltorResult =await unitOfWork.CheckNumberRepository.CheckNumberForRieltorAsync(numberList);
 
                                             if (checkNumberRieltorResult > 0)
                                             {
@@ -258,7 +258,7 @@ namespace WebApi.Services.DashinmazEmlak
 
                                             announce.logo_images = JsonSerializer.Serialize(await images);
 
-                                            await unitOfWork.Announces.Create(announce);
+                                            await unitOfWork.Announces.CreateAsync(announce);
                                             unitOfWork.Dispose();
 
                                             if (checkedNumber == false)

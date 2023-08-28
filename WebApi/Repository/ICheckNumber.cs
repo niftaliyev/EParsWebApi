@@ -7,7 +7,7 @@ namespace WebApi.Repository
 {
     public interface ICheckNumber
     {
-        int CheckNumberForRieltor(params string[] numbers);
+        Task<int> CheckNumberForRieltorAsync(params string[] numbers);
         int CheckNumberForOwner(params string[] numbers);
     }
 }

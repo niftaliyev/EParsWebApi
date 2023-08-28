@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApi.Services;
 using WebApi.Services.VipEmlakAz;
 
 namespace WebApi.Jobs
 {
+    [DisallowConcurrentExecution]
     public class VipEmlakAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -18,12 +20,21 @@ namespace WebApi.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var provider = scope.ServiceProvider;
+            try
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var provider = scope.ServiceProvider;
 
-            var vipEmlakAzService = provider.GetRequiredService<VipEmlakAzParser>();
+                var vipEmlakAzService = provider.GetRequiredService<VipEmlakAzParser>();
 
-            await vipEmlakAzService.VipEmlakAzPars();
+                await vipEmlakAzService.ParseSite();
+            }
+            catch (Exception e)
+            {
+                TelegramBotService.Sender($"cannot enter parser -->  vipemlak.az  -- {e.Message}");
+
+            }
+
         }
     }
 }

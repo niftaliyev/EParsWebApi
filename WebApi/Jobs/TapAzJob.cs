@@ -5,6 +5,7 @@ using WebApi.Services.TapAz;
 
 namespace WebApi.Jobs
 {
+    [DisallowConcurrentExecution]
     public class TapAzJob : IJob
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;

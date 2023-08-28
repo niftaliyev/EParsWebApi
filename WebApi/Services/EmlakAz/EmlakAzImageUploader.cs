@@ -14,7 +14,7 @@ namespace WebApi.Services.EmlakAz
         private readonly FileUploadHelper _fileUploadHelper;
         private readonly HttpClient httpClient;
         private readonly UnitOfWork unitOfWork;
-        public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient, UnitOfWork unitOfWork )
+        public EmlakAzImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient, UnitOfWork unitOfWork)
         {
             _fileUploadHelper = fileUploadHelper;
             this.httpClient = httpClient;
@@ -28,30 +28,25 @@ namespace WebApi.Services.EmlakAz
             {
                 list = await Task.Run(async () =>
                 {
-                    var count = doc.DocumentNode.SelectNodes(".//img").Count;
+                    var count = doc.DocumentNode.SelectNodes(".//div[@class='item-slider']//img").Count;
                     bool turn = true;
                     List<string> images = new List<string>();
-
+                    var tasks = new List<Task>();
 
                     for (int i = 0; i < count; i++)
                     {
-                        if (doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value.StartsWith("/images/announces"))
+                        if (doc.DocumentNode.SelectNodes(".//div[@class='item-slider']//img")[i].Attributes["src"].Value.StartsWith("/images/announces"))
                         {
-                            var split = doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value.Split('/');
+                            var split = doc.DocumentNode.SelectNodes(".//div[@class='item-slider']//img")[i].Attributes["src"].Value.Split('/');
                             if (split[5] == id)
                             {
-                                var link = doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value;
+                                var link = doc.DocumentNode.SelectNodes(".//div[@class='item-slider']//img")[i].Attributes["src"].Value;
 
-                                
 
-                                if (!Directory.Exists(filePath))
-                                {
-                                    Directory.CreateDirectory(filePath);
 
-                                }
                                 if (turn)
                                 {
-                                    var link2 = doc.DocumentNode.SelectNodes(".//img")[i].Attributes["src"].Value;
+                                    var link2 = doc.DocumentNode.SelectNodes(".//div[@class='item-slider']//img")[i].Attributes["src"].Value;
                                     var index = link2.LastIndexOf('-');
                                     var index2 = link2.LastIndexOf('.');
                                     var count2 = index2 - index;
@@ -66,9 +61,7 @@ namespace WebApi.Services.EmlakAz
                                 var fileExtension = Path.GetExtension(uriWithoutQuery);
 
                                 await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
-                                //var indexStartUpload = filePath.IndexOf("UploadFile");
-                                //var fileEndPath = $"{filePath.Substring(indexStartUpload)}/{filename}{fileExtension}";
-                                //images.Add(fileEndPath);
+
                                 var fileEndPath = $"{filePath}{filename}{fileExtension}";
 
                                 images.Add(fileEndPath);
@@ -77,6 +70,7 @@ namespace WebApi.Services.EmlakAz
                             }
                         }
                     }
+
                     return images;
                 });
             }

@@ -56,7 +56,7 @@ namespace WebApi.Services
                                             await unitOfWork.RieltorRepository.CreateAsync(new Rieltor { Phone = numbers[j] });
                                         }
 
-                                        await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 2 });
+                                         await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { AnnounceId = id, Announcer = 2 });
                                         turn = true;
                                         break;
 
@@ -67,7 +67,7 @@ namespace WebApi.Services
                          
                                         if (i == (numbers.Length - 1))
                                         {
-                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { OriginalId = id, Announcer = 1 });
+                                            await unitOfWork.Announces.UpdateAnnouncerAsync(new AnnounceAnnouncerUpdateViewModel { AnnounceId = id, Announcer = 1 });
 
                                         }
                                         // unitOfWork.OwnerRepository.CreateAsync(new OwnerViewModel { Phone = number});

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using WebApi.Models;
 using WebApi.Repository;
 using WebApi.Services.EmlakciAz.Interfaces;
+using WebApi.ViewModels;
 
 namespace WebApi.Services.EmlakciAz
 {
@@ -25,7 +26,7 @@ namespace WebApi.Services.EmlakciAz
         private readonly EmlakciAzSettlementNames settlementNames;
         private readonly EmlakciAzImageUploader imageUploader;
         HttpResponseMessage header;
-        public int maxRequest = 50;
+        public int maxRequest = 200;
 
         public EmlakciAzParser(EmlakBazaWithProxy emlakBaza,
             UnitOfWork unitOfWork,
@@ -65,7 +66,17 @@ namespace WebApi.Services.EmlakciAz
                     {
                         try
                         {
-                            Uri myUri = new Uri($"{model.site}/elanlar/view/{++id}", UriKind.Absolute);
+                            ++id;
+                            var searchModel = new AnnounceSearchViewModel();
+                            searchModel.OriginalId = id;
+                            searchModel.ParserSite = model.site;
+                            bool isValid = await unitOfWork.Announces.IsAnnounceValidAsync(searchModel);
+                            if (isValid)
+                            {
+                                continue;
+                            }
+                            Uri myUri = new Uri($"{model.site}/elanlar/view/{id}", UriKind.Absolute);
+                           
                             header = await _httpClient.GetAsync(myUri);
                             var url = header.RequestMessage.RequestUri.AbsoluteUri;
                             HtmlDocument doc = new HtmlDocument();
@@ -207,7 +218,7 @@ namespace WebApi.Services.EmlakciAz
                                         }
 
                                         bool checkedNumber = false;
-                                        var checkNumberRieltorResult = unitOfWork.CheckNumberRepository.CheckNumberForRieltor(numberList.ToArray());
+                                        var checkNumberRieltorResult =await unitOfWork.CheckNumberRepository.CheckNumberForRieltorAsync(numberList.ToArray());
                                         if (checkNumberRieltorResult > 0)
                                         {
 
@@ -229,8 +240,10 @@ namespace WebApi.Services.EmlakciAz
                                         }
 
 
-                                        await unitOfWork.Announces.Create(announce);
-                                        unitOfWork.Dispose();
+                                        var lastId = await unitOfWork.Announces.CreateAsync(announce);
+                                        model.last_id = id;
+                                        unitOfWork.ParserAnnounceRepository.Update(model);
+                                   
 
                                         if (checkedNumber == false)
                                         {
@@ -238,7 +251,7 @@ namespace WebApi.Services.EmlakciAz
                                             //EMLAK - BAZASI
                                             await _emlakBaza.CheckAsync(id, numberList.ToArray());
                                         }
-
+                                        unitOfWork.Dispose();
 
                                     }
                                 }

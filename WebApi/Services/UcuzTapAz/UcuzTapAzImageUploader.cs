@@ -25,8 +25,6 @@ namespace WebApi.Services.UcuzTapAz
                 List<string> images = new List<string>();
                 try
                 {
-
-
                     var photos = doc.DocumentNode.SelectNodes("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/div[2]/div[1]/a");
 
                     for (int i = 0; i < photos.Count; i++)
@@ -35,15 +33,13 @@ namespace WebApi.Services.UcuzTapAz
 
                         if (i == 0)
                         {
-                            var thumbLink = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[2]/div[2]/div[1]/a[1]/img").Attributes["src"].Value;
+                           
+                          
+                            var thumbLink = doc.DocumentNode.SelectSingleNode("/html/body/div[5]/div/div[1]/section/div/div[2]/div[1]/div/a/img")
+                                                            .Attributes["src"].Value;
                             await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", new Uri(thumbLink), httpClient);
 
                         }
-
-                        //if (!Directory.Exists(filePath))
-                        //{
-                        //    Directory.CreateDirectory(filePath);
-                        //}
 
                         var filename = Guid.NewGuid().ToString();
                         var uri = new Uri(link);
@@ -53,7 +49,6 @@ namespace WebApi.Services.UcuzTapAz
 
                         await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
 
-                        //var indexStartUpload = filePath.IndexOf("UploadFile");
                         var fileEndPath = $"{filePath}{filename}{fileExtension}";
                         images.Add(fileEndPath);
 

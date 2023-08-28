@@ -13,7 +13,7 @@ namespace WebApi.Services.LalafoAz
         private readonly FileUploadHelper _fileUploadHelper;
         private readonly HttpClient httpClient;
 
-        public LalafoImageUploader(FileUploadHelper fileUploadHelper , HttpClient httpClient)
+        public LalafoImageUploader(FileUploadHelper fileUploadHelper, HttpClient httpClient)
         {
             _fileUploadHelper = fileUploadHelper;
             this.httpClient = httpClient;
@@ -33,11 +33,8 @@ namespace WebApi.Services.LalafoAz
                         if (doc.DocumentNode.SelectNodes(".//div[@class='carousel__custom-paging-img-wrap']//picture") != null)
                         {
                             var images2 = doc.DocumentNode.SelectNodes(".//div[@class='carousel__custom-paging-img-wrap']//picture//img");
-
                             foreach (var item in images2)
                             {
-
-           
 
                                 if (turn)
                                 {
@@ -47,7 +44,7 @@ namespace WebApi.Services.LalafoAz
                                 }
 
                                 var filename = Guid.NewGuid().ToString();
-                                var uri = new Uri(item.Attributes["src"].Value.Replace("api", "original"));
+                                var uri = new Uri(item.Attributes["src"].Value);
 
                                 await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
 
@@ -56,16 +53,47 @@ namespace WebApi.Services.LalafoAz
 
                                 var fileEndPath = $"{filePath}{filename}{fileExtension}";
                                 images.Add(fileEndPath);
+
+                            }
+
+                        }
+                        else if (doc.DocumentNode.SelectNodes("/html/body/div[1]/div/div[1]/div/div[3]/div[1]/div[1]/div/div/ul") != null)
+                        {
+                            var images2 = doc.DocumentNode.SelectNodes("/html/body/div[1]/div/div[1]/div/div[3]/div[1]/div[1]/div/div/ul/li/a/img");
+                            foreach (var item in images2)
+                            {
+
+                                if (turn)
+                                {
+                                    var thumbUri = new Uri(item.Attributes["src"].Value);
+                                    await _fileUploadHelper.DownloadImageAsync(filePath, "Thumb", thumbUri, httpClient);
+                                    turn = false;
+                                }
+
+                                var filename = Guid.NewGuid().ToString();
+                                var uri = new Uri(item.Attributes["src"].Value);
+
+                                await _fileUploadHelper.DownloadImageAsync(filePath, filename, uri, httpClient);
+
+                                var uriWithoutQuery = uri.GetLeftPart(UriPartial.Path);
+                                var fileExtension = Path.GetExtension(uriWithoutQuery);
+
+                                var fileEndPath = $"{filePath}{filename}{fileExtension}";
+                                images.Add(fileEndPath);
+
                             }
                         }
                     }
-                    
+                    if (images.Count == 0)
+                    {
+                        TelegramBotService.Sender($"Image count is 0 , {id}");
+                    }
                     return images;
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                TelegramBotService.Sender($"Image upload error -lalafo - {ex.Message}");
             }
             return list;
         }
